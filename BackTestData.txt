@@ -1,9 +1,0 @@
-Results for TSLA going back to 0, Sample size: 25 trades
-EMAs used: 30, 100 day
-Batting Avg: 0.24
-Gain/loss ratio: 11.80683509399098
-Average Gain: 78.36032658284722
-Average Loss: -6.6368612722242775
-Max Return: 178.16065351261776
-Max Loss: -18.237810123060182
-Total return over 25 trades: -100.0%

@@ -1,0 +1,67 @@
+Mision Statement: 
+
+This program is meant to show the graphs of multiple different stocks at once, so that you can compare and contrast different stocks
+at the same time. The goal is to display this information in an easy-to-read format and to give a bit of insight as to the minute differences
+in the stocks. The program will monitor things like price action, volume, and relative progression of the stock.
+
+PseudoCode:
+
+xImport resources
+    xPandas
+    xNumpy
+    xyfinance
+    xmatplotlib
+    xpandas_datareader
+    xrequests.api
+    xcollections
+    xyfinance
+    xyahoo_fin
+    xdatetime
+xpdr_override
+xset start and end date for data period
+xget data
+    xget symbols
+        xstore in csv file
+    xDownload from yfinance
+        xstore in seperate csv files
+        -store all csv files in seperate folder and subfolders
+xclean and format data
+    xstore data in DFs or csvs
+    xget rid of NaN's and other stuff
+    xdata should be plottable
+-Analayze data
+    xcalculate SMAs and avgs
+        xfind cross points
+    xCompare volume
+        xlast volume
+        xAverage volume
+        xWho did the most volume?
+    -Compare Price action
+        xcalculate correlations
+            -store in file
+    -Analyze correlations
+    -find strong price correlations between input stock (only if 1 input) and other stocks on the market
+xplot data
+    xplot stock1 metrics
+    xplot stock2 metrics
+    xplot comparative graph
+xReport Data
+    xLast price
+    xLast volume
+    xAverage price
+    xAverage Volume
+    xMarket price correlation
+    xMarket Volume Correlation
+    -highest price
+    -highest price action
+    -most volume
+    -least volume
+
+TODO:
+
+-create gui
+-write tests
+-add regression lines to graphs
+-redo highest price action and volume to exclude ^GSPC
+-adapt code for multiple symbols
+
