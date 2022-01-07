@@ -30,7 +30,7 @@ def top_correlations():
     if yes_or_no == 'y' or yes_or_no ==  "Y" or yes_or_no ==  'yes' or yes_or_no ==  'Yes':
 
         from FindCorrelations import dataset, stocks_returns, get_redundant_pairs, get_top_abs_correlations
-        df = pd.read_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\FindCorrelations.csv')
+        df = pd.read_csv('Stocks\DataVis\Files\Correlations\FindCorrelations.csv')
         print(df.loc[0:10,:])
 
     else:
@@ -55,8 +55,6 @@ def get_symbols():
         # add ticker symbols to symbols list
         symbols.append(uinput)
 
-        
-
         # Iterate
         j = j+1
     
@@ -67,19 +65,14 @@ def get_symbols():
         symbols.append('^GSPC')
     
     for symbol in symbols:
-        tick = yf.download(symbol,
-            period='1y', 
-            interval='1d',
-            group_by = 'ticker',
-            auto_adjust = False,
-            prepost = False,
-            threads = True)
-        tick.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\StockData\\' + str(symbol) + '.csv')
+        tick = yf.download(symbol, period='1y', interval='1d')
+        
+        tick.to_csv('Stocks\DataVis\Files\StockData\\' + str(symbol) + '.csv')
 
 
     # Place symbols in dataframe for easier use
     symboldf = pd.DataFrame(symbols)
-    symboldf.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Tickers\Symbols.csv')
+    symboldf.to_csv('Stocks\DataVis\Files\Tickers\Symbols.csv')
 
     #### if there is only 1 ticker, analyze it against the market
     #### if j == 1, there is only 1 ticke, otherwise there are either 0 or 2 or more tickers
@@ -92,7 +85,7 @@ def get_symbols():
 
 # get symbols to be analyzed
 # can use top correlations to get hot stocks correlated with the market
-get_symbols()
+# get_symbols()
 
 #### if you have a single ticker, proceed here to single analysis
 if s ==1:
@@ -102,7 +95,7 @@ if s ==1:
         i = 0
         for symbol in symbols:
             # var for ticker csv file
-            TICKER = pd.read_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\StockData\\' + str(symbol) + ".csv", skipfooter=3, engine='python')
+            TICKER = pd.read_csv('Stocks\DataVis\Files\StockData\\' + str(symbol) + ".csv", skipfooter=3, engine='python')
 
             #SMA 30 day stored in a pandas dataframe
             smaThirty = pd.DataFrame()
@@ -180,10 +173,10 @@ if s ==1:
     #### Report (Display information)
     ## Correlation Matrices
     if comp == 'y' or  comp == 'Y' or comp ==  'yes' or comp ==  'Yes':
-        # data = yf.download(symbols, start)
+
 
         # Price Matrix
-        stock_data = tick['Close']
+        stock_data = yf.download(symbols, start)['Close']
         returns = pd.DataFrame()
         for stock in stock_data:
             if stock not in returns:
@@ -191,15 +184,13 @@ if s ==1:
         returns = returns[1:]        
         returns.describe()
         returns.corr()
-        scatter_matrix(returns, figsize=(10,8), alpha=0.3)
-        plt.title('Price Correlation')
         for symbol in symbols:
-            returns.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'PriceCorrelations.csv')
-            # returns.to_csv('D:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'PriceCorrelations.csv')
-
+            returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+'PriceCorrelation.csv')
+        # plt.title('Price Correlations')
+        scatter_matrix(returns, figsize=(10,8), alpha=0.3)
 
         # Volume Matrix
-        vol_data = tick['Volume']
+        vol_data = yf.download(symbols, start)['Volume']
         volreturns = pd.DataFrame()
         for stock in vol_data:
             if stock not in volreturns:
@@ -207,11 +198,10 @@ if s ==1:
         volreturns = volreturns[1:]        
         volreturns.describe()
         volreturns.corr()
-        scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
-        plt.title('Volume Correlation')
         for symbol in symbols:
-            returns.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'VolumeCorrelations.csv')
-            # returns.to_csv('D:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'VolumeCorrelations.csv')
+            returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+'VolumeCorrelation.csv')
+        # plt.title('Volume Correlations')
+        scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
 
 
 
@@ -228,8 +218,8 @@ if s == 0:
         for symbol in symbols:
             # download YF data and store in tick.csv
             tick = yf.download(symbol, start=start, end=today)
-            tick.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\StockData' + str(symbol) + ".csv")
-            TICKER = pd.read_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\StockData' + str(symbol) + ".csv", skipfooter=3, engine='python')
+            tick.to_csv('Stocks\DataVis\Files\StockData' + str(symbol) + ".csv")
+            TICKER = pd.read_csv('Stocks\DataVis\Files\StockData' + str(symbol) + ".csv", skipfooter=3, engine='python')
 
 
             #SMA 30 day stored in a pandas dataframe
@@ -316,9 +306,9 @@ if s == 0:
     returns = returns[1:]        
     returns.describe()
     returns.corr()
-    returns.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'PriceCorrelations.csv')
-    # returns.to_csv('D:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'PriceCorrelations.csv')
-    # plt.title('Price Correlations')
+    for symbol in symbols:
+        returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+ 'PriceCorrelations.csv')
+    plt.title('Price Correlations')
     scatter_matrix(returns, figsize=(10,8), alpha=0.3)
 
     # Volume Matrix
@@ -330,9 +320,9 @@ if s == 0:
     volreturns = volreturns[1:]        
     volreturns.describe()
     volreturns.corr()
-    # plt.title('Volume Correlations')
-    returns.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'VolumeCorrelations.csv')
-    # returns.to_csv('D:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\'+symbol+ 'VolumeCorrelations.csv')
+    plt.title('Volume Correlations')
+    for symbol in symbols:
+        returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+ 'VolumeCorrelations.csv')
     scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
 
 
@@ -348,9 +338,8 @@ if s == 0:
     returns = returns[1:]        
     returns.describe()
     returns.corr()
-    returns.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Tickers\\StockData.csv')
-    # returns.to_csv('D:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\PriceCorrelations.csv')
-    # plt.title('Price Correlations')
+    returns.to_csv('Stocks\DataVis\Files\Tickers\\StockData.csv')
+    plt.title('Price Correlations')
     scatter_matrix(returns, figsize=(10,8), alpha=0.3)
 
     # Volume Matrix
@@ -362,7 +351,7 @@ if s == 0:
     volreturns = volreturns[1:]        
     volreturns.describe()
     volreturns.corr()
-    # plt.title('Volume Correlations')
+    plt.title('Volume Correlations')
     scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
     batch_ticker_analysis(symbols)
 
@@ -371,9 +360,9 @@ def report():
 
     k=0
     for symbol in symbols:
-        csvfile = pd.read_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\StockData\\'+symbol+'.csv')
-        pricefile = pd.read_csv( 'F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
-        volumefile = pd.read_csv( 'F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')
+        csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\\'+symbol+'.csv')
+        pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelation.csv')
+        volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelation.csv')
 
         last_pri = str(csvfile['Close'].iloc[-1])
         last_vol = str(csvfile['Volume'].iloc[-1])
@@ -418,13 +407,14 @@ def report():
     print('\nMost Volume:\n\t\t\t' + str(max_vol))
     print('------------------------------------------')
         
-#### Show Plots
+#### Show and save Plots
 def plots():
-    plt.savefig('F:\Projects\Quantv2\Stocks\DataVis\Files\Graphs\\'+str(symbol) + 'Graphs.png')
+    # plt.savefig('Stocks\DataVis\Files\Graphs\\'+str(symbol) + 'Graphs.png')
     plt.show()
 
 
 
 #### run functions
+get_symbols()
 report()
 plots()
