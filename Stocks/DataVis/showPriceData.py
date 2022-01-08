@@ -85,10 +85,10 @@ def get_symbols():
 
 # get symbols to be analyzed
 # can use top correlations to get hot stocks correlated with the market
-# get_symbols()
+get_symbols()
 
 #### if you have a single ticker, proceed here to single analysis
-if s ==1:
+if len(symbols) == 1:
 
     def single_ticker_Analysis(symbols):
         
@@ -212,8 +212,10 @@ if s ==1:
     single_ticker_Analysis(symbols)
 
 #### if have more the one ticker, proceed to batch analysis
-if s == 0:
-    def batch_ticker_analysis():
+if len(symbols) != 1:
+
+    def batch_ticker_analysis(symbols):
+
         i = 0
         for symbol in symbols:
             # download YF data and store in tick.csv
@@ -355,14 +357,17 @@ if s == 0:
     scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
     batch_ticker_analysis(symbols)
 
+else:
+    pass
+
 #### Iterate over csv files and report last and average price and volume for all symbols
 def report():
 
     k=0
     for symbol in symbols:
         csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\\'+symbol+'.csv')
-        pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelation.csv')
-        volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelation.csv')
+        pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
+        volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')
 
         last_pri = str(csvfile['Close'].iloc[-1])
         last_vol = str(csvfile['Volume'].iloc[-1])
@@ -415,6 +420,6 @@ def plots():
 
 
 #### run functions
-get_symbols()
+# get_symbols()
 report()
 plots()
