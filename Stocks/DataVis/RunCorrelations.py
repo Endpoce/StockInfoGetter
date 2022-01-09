@@ -30,10 +30,10 @@ while t < 10:
 
         if yes_or_no == 'y' or yes_or_no ==  "Y" or yes_or_no ==  'yes' or yes_or_no ==  'Yes':
 
-            # from FindCorrelations import dataset, stocks_returns, get_redundant_pairs, get_top_abs_correlations
-            import FindCorrelations
-            # df = pd.read_csv('Stocks\DataVis\Files\Correlations\FoundCorrs.csv')
-            # print(df.loc[0:10,:])
+            from FindCorrelations import dataset, stocks_returns, get_redundant_pairs, get_top_abs_correlations
+            # import FindCorrelations
+            df = pd.read_csv('Stocks\DataVis\Files\Correlations\FoundCorrs.csv')
+            print(df.loc[0:10,:])
 
         else:
 

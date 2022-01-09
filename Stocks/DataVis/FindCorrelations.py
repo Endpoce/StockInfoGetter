@@ -22,9 +22,7 @@ dataset = pdr.get_data_yahoo(tickers, start, end)['Adj Close']
 
 stocks_returns = np.log(dataset/dataset.shift(1))
 
-# print('\nCorrelation Matrix')
 corr_matrix = stocks_returns.corr()
-# print (corr_matrix)
 
 def get_redundant_pairs(df):
     pairs_to_drop = set()
@@ -38,10 +36,13 @@ def get_top_abs_correlations(df):
     au_corr = df.corr().abs().unstack()
     labels_to_drop = get_redundant_pairs(df)
     au_corr = au_corr.drop(labels=labels_to_drop).sort_values(ascending=False)
-    FindCorrelations = au_corr.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\FindCorrelations.csv')
+    FindCorrelations = au_corr.to_csv('Stocks\DataVis\Files\Correlations\FoundCorrs.csv')
 
     return au_corr
 
+get_top_abs_correlations(stocks_returns)
+
+
 # print("\nTop Absolute Correlations")
-# print(get_top_abs_correlations(stocks_returns[10:]))
+# print(get_top_abs_correlations(stocks_returns[0:10,:]))
 
