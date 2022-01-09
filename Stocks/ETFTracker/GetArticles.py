@@ -22,5 +22,24 @@ for link in soup.findAll('a'):
 for link in links:
     if "https:" in str(link):
         print(link)
+        print()
+    else:
+        pass
+
+url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
+
+# r = requests.get(url)
+reqs = requests.get(url)
+soup = BeautifulSoup(reqs.text, 'lxml')
+
+
+links = []
+for link in soup.findAll('a'):
+    links.append(link.get('href'))
+
+for link in links:
+    if "https:" in str(link):
+        print(link)
+        print()
     else:
         pass
