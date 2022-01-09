@@ -38,7 +38,7 @@ def get_top_abs_correlations(df):
     au_corr = df.corr().abs().unstack()
     labels_to_drop = get_redundant_pairs(df)
     au_corr = au_corr.drop(labels=labels_to_drop).sort_values(ascending=False)
-    FindCorrelations = au_corr.to_csv('Stocks\DataVis\Files\Correlations\FoundCorrs.csv')
+    FindCorrelations = au_corr.to_csv('F:\Projects\Quantv2\Stocks\DataVis\Files\Correlations\FindCorrelations.csv')
 
     return au_corr
 
