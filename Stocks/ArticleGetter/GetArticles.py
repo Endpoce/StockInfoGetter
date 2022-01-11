@@ -88,17 +88,19 @@ def get_Paragraphs(soup, site, symbol):
     with open("Stocks\ArticleGetter\Files\\"+symbol+"Bodies.txt", "w") as f:       
         f.truncate()
         for data in soup.findAll('p'):
+            try:
+                if "company" in str(data):
+                    f.writelines("\n" + site + ":\n\n")
+                    f.write(str(data.getText()))
 
-            if "company" in str(data):
-                f.writelines("\n" + site + ":\n\n")
-                f.write(str(data.getText()))
-
-                print(str(site) + ":\n\n")
-                print(data.getText())
-                print()
-
-            else:
+                    print(str(site) + ":\n\n")
+                    print(data.getText())
+                    print()
+                else:
+                    pass
+            except Exception as e:
                 pass
+
             # print(data.getText())
     f.close()
 

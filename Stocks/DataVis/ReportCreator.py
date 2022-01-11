@@ -50,14 +50,14 @@ def get_symbols():
     while j < 10: 
 
         # Get input
-        uinput = input('Ticker Symbol: ').upper()
+        symbol = input('Ticker Symbol: ').upper()
 
         # If ticker symbol = QUIT, quit
-        if uinput == 'QUIT' or uinput == "":
+        if symbol == 'QUIT' or symbol == "":
             break
 
         # add ticker symbols to symbols list
-        symbols.append(uinput)
+        symbols.append(symbol)
 
         # Iterate
         j = j+1
@@ -159,6 +159,33 @@ def single_ticker_Analysis(symbol):
     plt.title(symbol + ' Adj. Close Price History')
     plt.xlabel('SMA 30 vs. 100 day')
     plt.ylabel('Adj. Close Price')
+
+    # Correlation Matrices
+    # Price Matrix
+    stock_data = yf.download(symbol, start)['Close']
+    returns = pd.DataFrame()
+    for stock in stock_data:
+        if stock not in returns:
+            returns[stock] = np.log(stock_data[stock]).diff()
+    returns = returns[1:]        
+    returns.describe()
+    returns.corr()
+    returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+ 'PriceCorrelations.csv')
+    plt.title('Price Correlations')
+    scatter_matrix(returns, figsize=(10,8), alpha=0.3)
+
+    # Volume Matrix
+    vol_data = yf.download(symbols, start)['Volume']
+    volreturns = pd.DataFrame()
+    for stock in vol_data:
+        if stock not in volreturns:
+            volreturns[stock] = np.log(vol_data[stock]).diff()
+    volreturns = volreturns[1:]        
+    volreturns.describe()
+    volreturns.corr()
+    plt.title('Volume Correlations')
+    returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+ 'VolumeCorrelations.csv')
+    scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
 
     i += 1
 
