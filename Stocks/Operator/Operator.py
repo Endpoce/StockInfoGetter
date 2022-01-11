@@ -17,22 +17,13 @@ symbols = []
 def get_symbols():
     
     # Grab up to 10 tickers
-    j = 0
-    while j < 10: 
 
-        # Get input
-        uinput = input('Ticker Symbol: ').upper()
+    # Get input
+    uinput = input('Ticker Symbol: ').upper()
 
-        # If ticker symbol = QUIT, quit
-        if uinput == 'QUIT' or uinput == "":
-            break
+    # add ticker symbols to symbols list
+    symbols.append(uinput)
 
-        # add ticker symbols to symbols list
-        symbols.append(uinput)
-
-        # Iterate
-        j = j+1
-    
     # compare against the market?
     global comp
     comp = input('Compare against the market?: ')
@@ -62,8 +53,8 @@ def get_Ticker_info():
 
     get_symbols()
 
-    for symbol in symbols:
-        print("\n"+symbol+"\n")
+    # for symbol in symbols:
+    #     print("\n"+symbol+"\n")
 
     for symbol in symbols:
 
@@ -73,6 +64,8 @@ def get_Ticker_info():
 
         with open("Stocks\ArticleGetter\Files\\"+ str(symbol) +"Bodies.txt") as f:
             print(f.read())
-        
 
-get_Ticker_info()
+t = 0
+while t < 5:
+    get_Ticker_info()
+    t+=1
