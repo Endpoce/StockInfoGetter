@@ -7,6 +7,26 @@ import matplotlib.pyplot as plt
 import json
 import time
 
+symbols = []
+
+def get_symbols():
+    
+    # Grab up to 10 tickers
+    j = 0
+    while j < 10: 
+
+        # Get input
+        uinput = input('Ticker Symbol: ').upper()
+
+        # If ticker symbol = QUIT, quit
+        if uinput == 'QUIT' or uinput == "":
+            break
+
+        # add ticker symbols to symbols list
+        symbols.append(uinput)
+
+        # Iterate
+        j = j+1
 
 # def get_Google_articles(symbol):
 
@@ -61,6 +81,7 @@ def get_MW_Articles(symbol):
             else:
                 pass
     f.close()
+    return soup, site
 
 def get_Paragraphs(soup, site, symbol):
 
@@ -81,21 +102,7 @@ def get_Paragraphs(soup, site, symbol):
             # print(data.getText())
     f.close()
 
-def print_Articles():
-    h = 0
-    while h < 10:
-
-        symbols = []
-        symbol = " "
-
-        t = 0
-        while t < 5:
-            symbol = input("Ticker: ").upper()
-            if symbol == "QUIT" or symbol == "":
-                break
-            else:
-                symbols.append(symbol)
-            t+=1
+def print_Articles(symbols):
 
         # ask1 = input("Get Google Articles? (Y/N) : ")
 
