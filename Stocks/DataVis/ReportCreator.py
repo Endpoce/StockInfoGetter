@@ -79,6 +79,8 @@ while t < 10:
 
             tick = yf.download(symbol, period='1y', interval='1d')
             tick.to_csv('Stocks\DataVis\Files\StockData\\' + str(symbol) + '.csv')
+        
+        return symbols
 
     # get symbols to be analyzed
     # can use top correlations to get hot stocks correlated with the market
@@ -358,7 +360,7 @@ while t < 10:
         pass
 
     #### Iterate over csv files and report last and average price and volume for all symbols
-    def report():
+    def report(symbols):
 
         k=0
         for symbol in symbols:
@@ -418,7 +420,7 @@ while t < 10:
 
     #### run functions
     # get_symbols()
-    report()
+    report(symbols)
     plots()
 
     # Iterate
