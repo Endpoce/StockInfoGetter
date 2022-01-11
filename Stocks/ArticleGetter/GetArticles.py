@@ -41,7 +41,6 @@ def get_MW_Articles(symbol):
 
         global soup, site
 
-        # r = requests.get(url)
         reqs = requests.get(url)
         soup = BeautifulSoup(reqs.text, 'lxml')
         # soup.prettify()
@@ -63,7 +62,7 @@ def get_MW_Articles(symbol):
     
         
 
-def get_Paragraphs(soup, site):
+def get_Paragraphs(soup, site, symbol):
 
     with open("Stocks\ArticleGetter\Files\\"+symbol+"Bodies.txt", "w") as f:       
         f.truncate()
@@ -75,6 +74,8 @@ def get_Paragraphs(soup, site):
 
                 print(str(site) + ":\n\n")
                 print(data.getText())
+                print()
+
             else:
                 pass
             # print(data.getText())
@@ -83,7 +84,17 @@ def get_Paragraphs(soup, site):
 h = 0
 while h < 10:
 
-    symbol = input("Ticker: ").upper()
+    symbols = []
+    symbol = " "
+
+    t = 0
+    while t < 5:
+        symbol = input("Ticker: ").upper()
+        if symbol == "QUIT" or symbol == "":
+            break
+        else:
+            symbols.append(symbol)
+        t+=1
 
     # ask1 = input("Get Google Articles? (Y/N) : ")
 
@@ -95,10 +106,11 @@ while h < 10:
 
     ask2 = input("Get MarketWatch Articles? (Y/N) : ")
 
-    if ask2 == "y" or ask2 == "Y" or ask2 =="yes" or ask2 == "Yes":
-        get_MW_Articles(symbol)
-        get_Paragraphs(soup, site)
-    else:
-        pass
+    for symbol in symbols:
+        if ask2 == "y" or ask2 == "Y" or ask2 =="yes" or ask2 == "Yes":
+            get_MW_Articles(symbol)
+            get_Paragraphs(soup, site, symbol)
+        else:
+            pass
 
 

@@ -53,7 +53,7 @@ while t < 10:
             uinput = input('Ticker Symbol: ').upper()
 
             # If ticker symbol = QUIT, quit
-            if uinput == 'QUIT':
+            if uinput == 'QUIT' or uinput == "":
                 break
 
             # add ticker symbols to symbols list
@@ -383,7 +383,7 @@ while t < 10:
             # Price action
             print('\nLast Price:\n\t\t\t' + last_pri)
             print('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
-            print('\nAverage Price correlation:\n\t\t\t' + str(avg_pri_corr))
+            print('\nPrice correlation to market:\n\t\t\t' + str(avg_pri_corr))
 
             # Volume
             print('\nLast Volume:\n\t\t\t' + last_vol)
