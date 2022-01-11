@@ -1,5 +1,4 @@
-from Stocks.ArticleGetter.GetArticles import *
-from Stocks.DataVis.ReportCreator import *
+from GetArticles import *
 
 def get_Ticker_info():
 
