@@ -4,8 +4,8 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import yfinance as yf
-from ArticleGetter.GetArticles import get_MW_Articles, get_Google_articles,get_Paragraphs, print_Articles
-from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, batch_ticker_analysis, compare_Against_Market, plots
+from ArticleGetter.GetArticles import get_MW_Articles, get_Google_articles, get_Paragraphs, print_Articles
+from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, compare_Against_Market, plots
 
 from datetime import datetime
 import os.path
@@ -15,6 +15,13 @@ import pandas_datareader as pdr
 from yahoo_fin import stock_info as si
 from CorrelationTracker import StockCorrelations
 from CorrelationTracker import CryptoCorrelations
+import requests
+from bs4 import BeautifulSoup
+
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+plt.style.use('bmh')
 
 
 
@@ -66,7 +73,7 @@ def get_symbols():
         tick = yf.download(ticker_name, start, today)
         tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker) + '.csv')
 
-    return ticker, symbols
+    return symbols
 
 def get_Ticker_info():
 
@@ -80,7 +87,19 @@ def get_Ticker_info():
             single_ticker_Analysis(symbols)
                 
             report(symbols)
-            get_Google_articles(symbol)
+
+
+            url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
+
+            global soup, site
+
+            reqs = requests.get(url)
+            soup = BeautifulSoup(reqs.text, 'lxml')
+                
+            site = 'MarketWatch'
+
+            get_Paragraphs(soup, site, symbol)
+
             get_MW_Articles(symbol)
 
             with open("Stocks\ArticleGetter\Files\\"+ str(symbol) +"Bodies.txt") as f:

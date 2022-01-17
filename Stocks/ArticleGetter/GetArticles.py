@@ -27,65 +27,72 @@ def get_symbols():
 
         # Iterate
         j = j+1
+    
+    return symbols
 
-def get_Google_articles(symbol):
+def get_Google_articles(symbols):
+    try:
+        for symbol in symbols:
+            if symbol != "^GSPC":
+                with open("Stocks\ArticleGetter\Files\\" +symbol+"GoogleLinks.txt", 'r+') as f:
+                    f.truncate(0)
 
-    with open("Stocks\ArticleGetter\Files\\" +symbol+"MWLinks.txt", 'r+') as f:
-        f.truncate(0)
+                    url = ("https://www.google.com/finance/quote/"+symbol+":NYSE")
 
-        url = ("https://www.google.com/finance/quote/"+symbol+":NYSE")
+                    global soup, site
 
-        global soup, site
+                    reqs = requests.get(url)
+                    soup = BeautifulSoup(reqs.text, 'html.parser')
 
-        reqs = requests.get(url)
-        soup = BeautifulSoup(reqs.text, 'html.parser')
+                    site = "Google Finance:"
 
-        site = "Google Finance:"
+                    links = []
+                    for link in soup.findAll('a'):
+                        links.append(link.get('href'))
 
-        links = []
-        for link in soup.findAll('a'):
-            links.append(link.get('href'))
+                    f.writelines("MarketWatch Links:\n\n")
 
-        f.writelines("MarketWatch Links:\n\n")
-
-        for link in links:
-            if "https:" in str(link):
-                f.write(link)
-            else:
-                pass
-    f.close()
+                    for link in links:
+                        if "https:" in str(link):
+                            f.write(link)
+                        else:
+                            pass
+                f.close()
+    except FileNotFoundError as e:
+        print("Error getting articles: " + str(e))
+        pass
 
 def get_MW_Articles(symbol):
+    if symbol != "^GSPC":
 
-    with open("Stocks\ArticleGetter\Files\\" +symbol+"MWLinks.txt", 'w') as f:
-        f.truncate(0)
+        with open("Stocks\ArticleGetter\Files\\" +symbol+"MWLinks.txt", 'w') as f:
+            f.truncate(0)
 
-        url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
+            url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
 
-        global soup, site
+            global soup, site
 
-        reqs = requests.get(url)
-        soup = BeautifulSoup(reqs.text, 'lxml')
-        
-        site = "MarketWatch"
+            reqs = requests.get(url)
+            soup = BeautifulSoup(reqs.text, 'lxml')
+            
+            site = "MarketWatch"
 
-        links = []
-        for link in soup.findAll('a'):
-            links.append(link.get('href'))
+            links = []
+            for link in soup.findAll('a'):
+                links.append(link.get('href'))
 
-        f.writelines("MarketWatch Links:\n\n")
+            f.writelines("MarketWatch Links:\n\n")
 
-        for link in links:
-            if "https:" in str(link):
-                f.write(link)
-            else:
-                pass
-    f.close()
-    return soup, site
+            for link in links:
+                if "https:" in str(link):
+                    f.write(link)
+                else:
+                    pass
+        f.close()
 
 def get_Paragraphs(soup, site, symbol):
 
-    with open("Stocks\ArticleGetter\Files\\"+symbol+"Bodies.txt", "") as f:       
+    with open("Stocks\ArticleGetter\Files\\"+symbol+"Bodies.txt", "w") as f:       
         f.truncate()
         for data in soup.findAll('p'):
             try:
@@ -108,11 +115,12 @@ def print_Articles(symbols):
 
         ask1 = input("Get Google Articles? (Y/N) : ")
 
-        if ask1 == "y" or ask1 == "Y" or ask1 =="yes" or ask1 == "Yes":
-            get_Google_articles(symbol)
-            get_Paragraphs
-        else:
-            pass
+        for symbol in symbols:
+            if ask1 == "y" or ask1 == "Y" or ask1 =="yes" or ask1 == "Yes":
+                get_Google_articles(symbol)
+                get_Paragraphs
+            else:
+                pass
 
         ask2 = input("Get MarketWatch Articles? (Y/N) : ")
 
