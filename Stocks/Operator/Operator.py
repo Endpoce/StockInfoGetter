@@ -13,6 +13,11 @@ import pandas as pd
 import numpy as np
 import pandas_datareader as pdr
 from yahoo_fin import stock_info as si
+from CorrelationTracker import StockCorrelations
+from CorrelationTracker import CryptoCorrelations
+
+
+
 
 today = datetime.now()
 start = '2020-01-01'
@@ -21,19 +26,14 @@ def get_corrs():
     StockCorrs = input("Get top Stock Correlations?")
 
     if StockCorrs == "Y" or StockCorrs == "y" or StockCorrs == "Yes" or StockCorrs == "yes":
-        if not open("Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv"):
-            from CorrelationTracker import StockCorrelations
-        else:
-            print("\nTop Absolute Correlations")
-            df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv')
-            print(df.loc[0:10,:])
+ 
+        print("\nTop Absolute Correlations")
+        df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv')
+        print(df.loc[0:10,:])
 
     CryptoCorrs = input("Get top Crypto Correlations?")
 
     if CryptoCorrs == "Y" or CryptoCorrs == "y" or CryptoCorrs == "Yes" or CryptoCorrs == "yes":
-        if not open("Stocks\CorrelationTracker\StockFiles\CryptoCorrelations.csv"):
-            from CorrelationTracker import CryptoCorrelations
-        else:
             print("\nTop Absolute Correlations")
             df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\CryptoCorrelations.csv')
             print(df.loc[0:10,:])

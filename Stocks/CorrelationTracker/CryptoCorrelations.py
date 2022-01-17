@@ -47,7 +47,7 @@ def get_top_abs_correlations(df):
 get_top_abs_correlations(stocks_returns)
 
 
-print("\nTop Absolute Correlations")
-df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\CryptoCorrelations.csv')
-print(df.loc[0:10,:])
+# print("\nTop Absolute Correlations")
+# df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\CryptoCorrelations.csv')
+# print(df.loc[0:10,:])
 
