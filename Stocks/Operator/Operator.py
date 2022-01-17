@@ -45,7 +45,7 @@ def get_symbols():
         symbols.append('^GSPC')
 
     for ticker_name in symbols:
-        tick = yf.download(str(ticker_name), start)
+        tick = yf.download(ticker_name)
         tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker) + '.csv')
 
     return ticker, symbols
@@ -61,7 +61,7 @@ def get_Ticker_info():
 
             single_ticker_Analysis(symbols)
                 
-            report(symbol, symbols)
+            report(symbols)
             get_Google_articles(symbol)
             get_MW_Articles(symbol)
 

@@ -45,8 +45,6 @@ def top_correlations():
 #### get list of tickers to be analyzed
 def get_symbols():
     
-    global symbol
-
     # Grab up to 10 tickers
     j = 0
     while j < 10: 
@@ -72,7 +70,7 @@ def get_symbols():
     if comp == 'y' or  comp == 'Y' or comp ==  'yes' or comp ==  'Yes':
         symbols.append('^GSPC')
     
-    return ticker_name, symbols
+    return ticker_name, comp, symbols
 
 #### if you have a single ticker, proceed here to single analysis
 def single_ticker_Analysis(symbols):
@@ -80,125 +78,83 @@ def single_ticker_Analysis(symbols):
     i = 0
     # var for ticker csv file
     for ticker_name in symbols:
-        print(ticker_name)
-        TICKER = pd.read_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker_name) + ".csv")
+        if ticker_name != "^GSPC":
+            TICKER = pd.read_csv('Stocks\DataVis\Files\StockData\FullData' + ticker_name + ".csv")
+            # print(TICKER['Volume'])
 
-        #SMA 30 day stored in a pandas dataframe
-        smaThirty = pd.DataFrame()
-        smaThirty['Close'] = TICKER['Close'].rolling(window=30).mean()
-        price_actions[ticker_name] = TICKER['Close'].mean()
+            #SMA 30 day stored in a pandas dataframe
+            smaThirty = pd.DataFrame()
+            smaThirty['Close'] = TICKER['Close'].rolling(window=30).mean()
+            price_actions[ticker_name] = TICKER['Close'].mean()
 
-        # SMA 100 day stored in a pandas dataframe
-        smaHundred = pd.DataFrame()
-        smaHundred['Close'] = TICKER['Close'].rolling(window=100).mean()
+            # SMA 100 day stored in a pandas dataframe
+            smaHundred = pd.DataFrame()
+            smaHundred['Close'] = TICKER['Close'].rolling(window=100).mean()
 
-        # volme stored in a pandas dataframe
-        volume = pd.DataFrame()
-        volume['Volume'] = TICKER['Volume'].rolling(window=30).mean()
-        # volume['Volume'] = TICKER['Volume']
-        avgvolumes[ticker_name] = TICKER['Volume'].mean()
+            # volme stored in a pandas dataframe
+            volume = pd.DataFrame()
+            volume["Volume"] = TICKER["Volume"].rolling(window=30).mean()
+            # volume['Volume'] = TICKER['Volume']
+            avgvolumes[ticker_name] = TICKER["Volume"].mean()
 
-        # create a new data frame to store all the data in 1 dataframe
-        data = pd.DataFrame()
-        data[str(TICKER)] = TICKER['Close']
-        data['smaThirty'] = smaThirty['Close']
-        data['smaHundred'] = smaHundred['Close']
-        data['Volume'] = volume['Volume']
+            # create a new data frame to store all the data in 1 dataframe
+            data = pd.DataFrame()
+            data[str(TICKER)] = TICKER['Close']
+            data['smaThirty'] = smaThirty['Close']
+            data['smaHundred'] = smaHundred['Close']
+            data["Volume"] = volume["Volume"]
 
-        # a function to signal when to buy and sell the stock
-        def buy_sell(data):
-            sigPriceBuy = []
-            sigPriceSell = []
-            flag = -1
+            # a function to signal when to buy and sell the stock
+            def buy_sell(data):
+                sigPriceBuy = []
+                sigPriceSell = []
+                flag = -1
 
-            # if sma30 > sma100 BUY, if sma100>sma30 SELL
-            for i in range(len(data)):
-                if data['smaThirty'][i] > data['smaHundred'][i]:
-                    if flag != 1:
-                        sigPriceBuy.append(data[str(TICKER)][i])
-                        sigPriceSell.append(np.nan)
-                        flag = 1
+                # if sma30 > sma100 BUY, if sma100>sma30 SELL
+                for i in range(len(data)):
+                    if data['smaThirty'][i] > data['smaHundred'][i]:
+                        if flag != 1:
+                            sigPriceBuy.append(data[str(TICKER)][i])
+                            sigPriceSell.append(np.nan)
+                            flag = 1
+                        else:
+                            sigPriceBuy.append(np.nan)
+                            sigPriceSell.append(np.nan)
+
+                    elif data['smaThirty'][i] < data['smaHundred'][i]:
+                        if flag != 0:
+                            sigPriceBuy.append(np.nan)
+                            sigPriceSell.append(data[str(TICKER)][i])
+                            flag = 0
+                        else:
+                            sigPriceBuy.append(np.nan)
+                            sigPriceSell.append(np.nan)
                     else:
                         sigPriceBuy.append(np.nan)
                         sigPriceSell.append(np.nan)
+                return(sigPriceBuy, sigPriceSell)
 
-                elif data['smaThirty'][i] < data['smaHundred'][i]:
-                    if flag != 0:
-                        sigPriceBuy.append(np.nan)
-                        sigPriceSell.append(data[str(TICKER)][i])
-                        flag = 0
-                    else:
-                        sigPriceBuy.append(np.nan)
-                        sigPriceSell.append(np.nan)
-                else:
-                    sigPriceBuy.append(np.nan)
-                    sigPriceSell.append(np.nan)
-            return(sigPriceBuy, sigPriceSell)
+            #store the buy and sell data into a var
+            buy_sell = buy_sell(data)
+            data['Buy_Signal_Price'] = buy_sell[0]
+            data['Sell_Signal_Price'] = buy_sell[1]
 
-        #store the buy and sell data into a var
-        buy_sell = buy_sell(data)
-        data['Buy_Signal_Price'] = buy_sell[0]
-        data['Sell_Signal_Price'] = buy_sell[1]
-
-        #visualize the data and the strategy to buy and sell the stock
-        plt.figure()
-        plt.style.use('fivethirtyeight')
-        plt.plot(TICKER['Close'], label = ticker_name, alpha=0.35)
-        plt.plot(smaThirty['Close'], label='SMA30',alpha=0.35)
-        plt.plot(smaHundred['Close'], label='SMA100',alpha=0.35)
-        plt.legend(loc=0)
-        plt.scatter(data.index, data['Buy_Signal_Price'], label='BUY', marker='^', color='green' )
-        plt.scatter(data.index, data['Sell_Signal_Price'], label='SELL', marker='v', color='red' )
-        plt.title(ticker_name + ' Adj. Close Price History')
-        plt.xlabel('SMA 30 vs. 100 day')
-        plt.ylabel('Close Price')
-
-            # Correlation Matrices
-            # Price Matrix
-        try:
-            stock_data = TICKER['Close']
-            returns = pd.DataFrame()
-            for stock in stock_data:
-                if stock not in returns:
-                    returns[ticker_name] = np.log(stock_data).diff()
-            returns = returns[1:]        
-            returns.describe()
-            returns.corr()
-            returnspricecsv = returns.to_csv('Stocks\DataVis\Files\Correlations\\' + ticker_name +'PriceCorrelations.csv')
-            # print(returns)
-            # plt.title('Price Correlations')
-            scatter_matrix(returns, figsize=(10,8), alpha=0.3)
-        except FileNotFoundError as e:
-            print()
-            print("Error getting price correlations: " + str(e))
-            print()
-            pass
-        try:
-            # Volume Matrix
-            vol_data = TICKER['Volume']
-            volreturns = pd.DataFrame()
-            for stock in vol_data:
-                if stock not in volreturns:
-                    volreturns[ticker_name] = np.log(vol_data).diff()
-            volreturns = volreturns[1:]        
-            volreturns.describe()
-            volreturns.corr()
-            # plt.title('Volume Correlations')
-            returnsvolcsv = returns.to_csv('Stocks\DataVis\Files\Correlations\\' + ticker_name +'VolumeCorrelations.csv')
-            scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
-
-        except FileNotFoundError as e:
-            print()
-            print("Error getting volume correlations: " + str(e))
-            print()
-            pass
-        i += 1
-
-    return returnspricecsv, returnsvolcsv
+            #visualize the data and the strategy to buy and sell the stock
+            plt.figure()
+            plt.style.use('fivethirtyeight')
+            plt.plot(TICKER['Close'], label = ticker_name, alpha=0.35)
+            plt.plot(smaThirty['Close'], label='SMA30',alpha=0.35)
+            plt.plot(smaHundred['Close'], label='SMA100',alpha=0.35)
+            plt.legend(loc=0)
+            plt.scatter(data.index, data['Buy_Signal_Price'], label='BUY', marker='^', color='green' )
+            plt.scatter(data.index, data['Sell_Signal_Price'], label='SELL', marker='v', color='red' )
+            plt.title(ticker_name + ' Adj. Close Price History')
+            plt.xlabel('SMA 30 vs. 100 day')
+            plt.ylabel('Close Price')
 
 #### Report (Display information)
 ## Correlation Matrices
-def compare_Against_Market():
+def compare_Against_Market(comp):
     if comp == 'y' or  comp == 'Y' or comp ==  'yes' or comp ==  'Yes':
 
 
@@ -212,7 +168,7 @@ def compare_Against_Market():
         returns.describe()
         returns.corr()
         for symbol in symbols:
-            returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+'PriceCorrelation.csv')
+            returns.to_csv('Stocks \DataVis\Files\Correlations\\'+symbol+'PriceCorrelation.csv')
         # plt.title('Price Correlations')
         scatter_matrix(returns, figsize=(10,8), alpha=0.3)
 
@@ -313,115 +269,58 @@ def batch_ticker_analysis(symbols):
         plt.ylabel('Adj. Close Price')
 
         i += 1
-            
-    # Report (Display information)
-    # Correlation Matrices
-    # Price Matrix
-    stock_data = yf.download(symbols, start)['Close']
-    returns = pd.DataFrame()
-    for stock in stock_data:
-        if stock not in returns:
-            returns[stock] = np.log(stock_data[stock]).diff()
-    returns = returns[1:]        
-    returns.describe()
-    returns.corr()
-    for symbol in symbols:
-        returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+ 'PriceCorrelations.csv')
-    # plt.title('Price Correlations')
-    scatter_matrix(returns, figsize=(10,8), alpha=0.3)
 
-    # Volume Matrix
-    vol_data = yf.download(symbols, start)['Volume']
-    volreturns = pd.DataFrame()
-    for stock in vol_data:
-        if stock not in volreturns:
-            volreturns[stock] = np.log(vol_data[stock]).diff()
-    volreturns = volreturns[1:]        
-    volreturns.describe()
-    volreturns.corr()
-    # plt.title('Volume Correlations')
-    for symbol in symbols:
-        returns.to_csv('Stocks\DataVis\Files\Correlations\\'+symbol+ 'VolumeCorrelations.csv')
-    scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
-
-
-    ### Report (Display information)
-
-    # Correlation Matrices
-    # Price Matrix
-    # stock_data = yf.download(symbols, start)['Close']
-    # returns = pd.DataFrame()
-    # for stock in stock_data:
-    #     if stock not in returns:
-    #         returns[stock] = np.log(stock_data[stock]).diff()
-    # returns = returns[1:]        
-    # returns.describe()
-    # returns.corr()
-    # returns.to_csv('Stocks\DataVis\Files\Tickers\\StockData.csv')
-    # plt.title('Price Correlations')
-    # scatter_matrix(returns, figsize=(10,8), alpha=0.3)
-
-    # # Volume Matrix
-    # vol_data = yf.download(symbols, start)['Volume']
-    # volreturns = pd.DataFrame()
-    # for stock in vol_data:
-    #     if stock not in volreturns:
-    #         volreturns[stock] = np.log(vol_data[stock]).diff()
-    # volreturns = volreturns[1:]        
-    # volreturns.describe()
-    # volreturns.corr()
-    # plt.title('Volume Correlations')
-    # scatter_matrix(volreturns, figsize=(10,8), alpha=0.3)
 
 #### Iterate over csv files and report last and average price and volume for all symbols
-def report(symbol, symbols):
+def report(symbols):
 
     # for each symbol in symbols, download the data and save it to a csv file
     for symbol in symbols:
-        tick = yf.download(symbol, period='1y', interval='1d')
-        tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(symbol) + '.csv')
+        if symbol != "^GSPC":
+            tick = yf.download(symbol, period='1y', interval='1d')
+            tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(symbol) + '.csv')
 
-        csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\FullData'+symbol+'.csv')
+            csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\FullData'+symbol+'.csv')
 
-        pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
-        volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')
+            pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
+            volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')
 
-    
-        last_pri = str(csvfile['Close'].iloc[-1])
-        last_vol = str(csvfile['Volume'].iloc[-1])
-
-        avg_pri = str(csvfile['Close'].mean())
-        avg_vol = str(csvfile['Volume'].mean())
         
-        avg_pri_corr = pricefile['^GSPC'].mean()
-        avg_vol_corr = volumefile['^GSPC'].mean()
+            last_pri = str(csvfile['Close'].iloc[-1])
+            last_vol = str(csvfile['Volume'].iloc[-1])
 
-        # Symbol
-        print()
-        print('------------------------------------------')
-        print(str(symbol) + ':')
+            avg_pri = str(csvfile['Close'].mean())
+            avg_vol = str(csvfile['Volume'].mean())
+            
+            # avg_pri_corr = pricefile['^GSPC'].mean()
+            # avg_vol_corr = volumefile['^GSPC'].mean()
 
-        # Price action
-        print('\nLast Price:\n\t\t\t' + last_pri)
-        print('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
-        # if "^GSPC" in symbols:
-        #     print('\nPrice correlation to market:\n\t\t\t' + str(avg_pri_corr))
-        # else:
-        #     pass
+            # Symbol
+            print()
+            print('------------------------------------------')
+            print(str(symbol) + ':')
 
-        # Volume
-        print('\nLast Volume:\n\t\t\t' + last_vol)
-        print('\nAverage (30d) volume:\n\t\t\t' + avg_vol)
-        # if "^GSPC" in symbols:
-        #     print('\nAverage Volume correlation:\n\t\t\t' + str(avg_vol_corr))
-        # else:
-        #     pass
-        
-        # Sort dictionaries
-        sorted_volumes = sorted(avgvolumes.items(), key=lambda x:x[1])
-        sortvol = dict(sorted_volumes)
-        sorted_prices = sorted(price_actions.items(), key=lambda x:x[1])
-        sortpri = dict(sorted_prices)
+            # Price action
+            print('\nLast Price:\n\t\t\t' + last_pri)
+            print('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
+            # if "^GSPC" in symbols:
+            #     print('\nPrice correlation to market:\n\t\t\t' + str(avg_pri_corr))
+            # else:
+            #     pass
+
+            # Volume
+            print('\nLast Volume:\n\t\t\t' + last_vol)
+            print('\nAverage (30d) volume:\n\t\t\t' + avg_vol)
+            # if "^GSPC" in symbols:
+            #     print('\nAverage Volume correlation:\n\t\t\t' + str(avg_vol_corr))
+            # else:
+            #     pass
+            
+            # Sort dictionaries
+            sorted_volumes = sorted(avgvolumes.items(), key=lambda x:x[1])
+            sortvol = dict(sorted_volumes)
+            sorted_prices = sorted(price_actions.items(), key=lambda x:x[1])
+            sortpri = dict(sorted_prices)
 
     # report highest price and highest volume
     if len(symbols) > 1:
@@ -440,5 +339,9 @@ def plots():
     # plt.savefig('Stocks\DataVis\Files\Graphs\\'+str(symbol) + 'Graphs.png')
     plt.show()
 
+# get_symbols()
+# compare_Against_Market(comp)
+# single_ticker_Analysis(symbols)
+# report()
 
 
