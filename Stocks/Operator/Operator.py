@@ -6,25 +6,43 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import yfinance as yf
 from ArticleGetter.GetArticles import get_MW_Articles, get_Google_articles,get_Paragraphs, print_Articles
 from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, batch_ticker_analysis, compare_Against_Market, plots
+
 from datetime import datetime
 import os.path
 import pandas as pd
+import numpy as np
+import pandas_datareader as pdr
+from yahoo_fin import stock_info as si
+
+today = datetime.now()
+start = '2020-01-01'
 
 def get_corrs():
     StockCorrs = input("Get top Stock Correlations?")
 
     if StockCorrs == "Y" or StockCorrs == "y" or StockCorrs == "Yes" or StockCorrs == "yes":
-        from CorrelationTracker import StockCorrelations
+        if not open("Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv"):
+            from CorrelationTracker import StockCorrelations
+        else:
+            print("\nTop Absolute Correlations")
+            df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv')
+            print(df.loc[0:10,:])
 
     CryptoCorrs = input("Get top Crypto Correlations?")
 
-    if CryptoCorrs == "Y" or StockCorrs == "y" or StockCorrs == "Yes" or StockCorrs == "yes":
-        from CorrelationTracker import CryptoCorrelations
+    if CryptoCorrs == "Y" or CryptoCorrs == "y" or CryptoCorrs == "Yes" or CryptoCorrs == "yes":
+        if not open("Stocks\CorrelationTracker\StockFiles\CryptoCorrelations.csv"):
+            from CorrelationTracker import CryptoCorrelations
+        else:
+            print("\nTop Absolute Correlations")
+            df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\CryptoCorrelations.csv')
+            print(df.loc[0:10,:])
+    else:
+        pass
 
 def get_symbols():
     #### Grab todays date and starting date
-    today = datetime.now()
-    start = '2020-01-01'
+
 
     global symbols
     symbols = []
@@ -45,7 +63,7 @@ def get_symbols():
         symbols.append('^GSPC')
 
     for ticker_name in symbols:
-        tick = yf.download(ticker_name)
+        tick = yf.download(ticker_name, start, today)
         tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker) + '.csv')
 
     return ticker, symbols

@@ -282,8 +282,8 @@ def report(symbols):
 
             csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\FullData'+symbol+'.csv')
 
-            pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
-            volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')
+            # pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
+            # volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')
 
         
             last_pri = str(csvfile['Close'].iloc[-1])
