@@ -103,6 +103,7 @@ def get_Paragraphs(soup, site, symbol):
                     print(str(site) + ":\n\n")
                     print(data.getText())
                     print()
+                    print('-----------------------------------------------')
                 else:
                     pass
             except Exception as e:

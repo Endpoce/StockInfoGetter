@@ -97,6 +97,8 @@ def get_Ticker_info():
 
             qtable = si.get_quote_table(symbol, dict_result=False)
             print(qtable)
+            print()
+            print('-----------------------------------------------')
 
             url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
 
@@ -110,10 +112,6 @@ def get_Ticker_info():
             get_Paragraphs(soup, site, symbol)
 
             get_MW_Articles(symbol)
-
-            with open("Stocks\ArticleGetter\Files\\"+ str(symbol) +"Bodies.txt") as f:
-                print(f.read())
-                print()
 
             plots()
 

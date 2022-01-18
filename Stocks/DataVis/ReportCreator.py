@@ -297,7 +297,7 @@ def report(symbols):
 
             # Symbol
             print()
-            print('------------------------------------------')
+            print('-----------------------------------------------')
             print(str(symbol) + ':')
 
             # Price action
