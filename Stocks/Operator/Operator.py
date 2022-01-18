@@ -1,12 +1,16 @@
 import csv
+
+# add this file to root directorysystem (fix for reading a saving files error)
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+# Import financial services
 import yfinance as yf
 from ArticleGetter.GetArticles import get_MW_Articles, get_Google_articles, get_Paragraphs, print_Articles
 from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, compare_Against_Market, plots
 
+# Import 
 from datetime import datetime
 import os.path
 import pandas as pd
@@ -18,18 +22,23 @@ from CorrelationTracker import CryptoCorrelations
 import requests
 from bs4 import BeautifulSoup
 
+# Import mpl, assign bmh style
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 plt.style.use('bmh')
 
-
-
-
+# Set historical window
 today = datetime.now()
 start = '2020-01-01'
 
+# Initalize symbols list for later use
+symbols = []
+
+# Get top stock and crypto correlations for user to examine and pursue
 def get_corrs():
+
+    # Get top stock correlations?
     StockCorrs = input("Get top Stock Correlations?")
 
     if StockCorrs == "Y" or StockCorrs == "y" or StockCorrs == "Yes" or StockCorrs == "yes":
@@ -38,6 +47,7 @@ def get_corrs():
         df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv')
         print(df.loc[0:10,:])
 
+    # Get top crypto correlations
     CryptoCorrs = input("Get top Crypto Correlations?")
 
     if CryptoCorrs == "Y" or CryptoCorrs == "y" or CryptoCorrs == "Yes" or CryptoCorrs == "yes":
@@ -47,12 +57,8 @@ def get_corrs():
     else:
         pass
 
+# Get symbols, store in symbols
 def get_symbols():
-    #### Grab todays date and starting date
-
-
-    global symbols
-    symbols = []
 
     # Get input
     ticker = input('Ticker Symbol: ').upper()
@@ -69,6 +75,7 @@ def get_symbols():
     if comp == 'y' or  comp == 'Y' or comp ==  'yes' or comp ==  'Yes':
         symbols.append('^GSPC')
 
+    # for ticker in symbols, download full data and financials
     for ticker_name in symbols:
         tick = yf.download(ticker_name, start, today)
         tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker) + '.csv')
@@ -88,6 +95,8 @@ def get_Ticker_info():
                 
             report(symbols)
 
+            qtable = si.get_quote_table(symbol, dict_result=False)
+            print(qtable)
 
             url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
 
@@ -106,9 +115,10 @@ def get_Ticker_info():
                 print(f.read())
                 print()
 
+            plots()
+
 
 t = 0
 while t < 5:
     get_Ticker_info()
-    plots()
     t+=1
