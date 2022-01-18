@@ -7,15 +7,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Import financial services
 import yfinance as yf
-from ArticleGetter.GetArticles import get_MW_Articles, get_Google_articles, get_Paragraphs, print_Articles
-from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, compare_Against_Market, plots
+from ArticleGetter.GetArticles import get_MW_Articles, get_Paragraphs
+from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, plots
 
 # Import 
 from datetime import datetime
 import os.path
 import pandas as pd
-import numpy as np
-import pandas_datareader as pdr
+# import numpy as np
+# import pandas_datareader as pdr
 from yahoo_fin import stock_info as si
 from CorrelationTracker import StockCorrelations
 from CorrelationTracker import CryptoCorrelations
@@ -107,7 +107,7 @@ def get_Ticker_info():
             reqs = requests.get(url)
             soup = BeautifulSoup(reqs.text, 'lxml')
                 
-            site = 'MarketWatch'
+            site = 'Description'
 
             get_Paragraphs(soup, site, symbol)
 

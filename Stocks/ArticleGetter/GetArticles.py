@@ -97,7 +97,7 @@ def get_Paragraphs(soup, site, symbol):
         for data in soup.findAll('p'):
             try:
                 if "company" in str(data):
-                    f.writelines("\n" + site + ":\n\n")
+                    f.writelines("\n" + "Description:" + ":\n\n")
                     f.write(str(data.getText()))
 
                     print(str(site) + ":\n\n")
