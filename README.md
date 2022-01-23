@@ -1,4 +1,4 @@
-# Quant
+# Stock Info Getter
 
 --WORK IN PROGRESS--
 
