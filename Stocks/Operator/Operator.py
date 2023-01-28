@@ -15,12 +15,13 @@ from datetime import datetime
 import os.path
 import pandas as pd
 # import numpy as np
-# import pandas_datareader as pdr
+import pandas_datareader as pdr
 from yahoo_fin import stock_info as si
 from CorrelationTracker import StockCorrelations
 from CorrelationTracker import CryptoCorrelations
 import requests
 from bs4 import BeautifulSoup
+import seaborn as sns
 
 # Import mpl, assign bmh style
 import matplotlib
@@ -28,7 +29,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 plt.style.use('bmh')
 
-# Set historical window
+# Set historical window and symbols list
 today = datetime.now()
 start = '2020-01-01'
 
@@ -57,6 +58,38 @@ def get_corrs():
     else:
         pass
 
+def get_single_corr():
+    #pull price using iex for each symbol in list defined above
+    for ticker in symbols: 
+        r = pdr.DataReader(ticker, 'yahoo', start)
+        # add a symbol column
+        r['Symbol'] = ticker 
+        symbols.append(r)
+
+    # concatenate into df
+    df = pd.concat(symbols)
+    df = df.reset_index()
+    df = df[['Date', 'Close', 'Symbol']]
+    df.head()
+
+    df_pivot = df.pivot('date','symbol','close').reset_index()
+    df_pivot.head()
+
+    corr_df = df_pivot.corr(method='pearson')
+    #reset symbol as index (rather than 0-X)
+    corr_df.head().reset_index()
+    del corr_df.index.name
+    corr_df.head(10)
+
+    #take the bottom triangle since it repeats itself
+    mask = np.zeros_like(corr_df)
+    mask[np.triu_indices_from(mask)] = True
+    #generate plot
+    sns.heatmap(corr_df, cmap='RdYlGn', vmax=1.0, vmin=-1.0 , mask = mask, linewidths=2.5)
+    plt.yticks(rotation=0) 
+    plt.xticks(rotation=90) 
+    plt.show()
+
 # Get symbols, store in symbols
 def get_symbols():
 
@@ -82,20 +115,14 @@ def get_symbols():
 
     return symbols
 
+# define function to get ticker info
 def get_Ticker_info():
-
-    get_corrs()
-
-    get_symbols()
 
     for symbol in symbols:
         if symbol != "^GSPC":
 
-            single_ticker_Analysis(symbols)
-                
-            report(symbols)
-
             qtable = si.get_quote_table(symbol, dict_result=False)
+            
             print(qtable)
             print()
             print('-----------------------------------------------')
@@ -111,12 +138,22 @@ def get_Ticker_info():
 
             get_Paragraphs(soup, site, symbol)
 
+            single_ticker_Analysis(symbols)
+                
+            report(symbols)
+
+
+
+
+
             get_MW_Articles(symbol)
 
             plots()
 
-
+# Run the program in a loop
 t = 0
 while t < 5:
+    get_corrs()
+    get_symbols()
     get_Ticker_info()
-    t+=1
+    t += 1

@@ -270,7 +270,6 @@ def batch_ticker_analysis(symbols):
 
         i += 1
 
-
 #### Iterate over csv files and report last and average price and volume for all symbols
 def report(symbols):
 
@@ -332,8 +331,7 @@ def report(symbols):
         print('\nHighest price action:\n\t\t\t' + str(max_price))
         print('\nMost Volume:\n\t\t\t' + str(max_vol))    
     print('------------------------------------------')
-
-        
+    
 #### Show and save Plots
 def plots():
     # plt.savefig('Stocks\DataVis\Files\Graphs\\'+str(symbol) + 'Graphs.png')
