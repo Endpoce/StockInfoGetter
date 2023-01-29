@@ -10,18 +10,19 @@ import yfinance as yf
 from ArticleGetter.GetArticles import get_MW_Articles, get_Paragraphs
 from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, plots
 
-# Import 
+# Import resources
 from datetime import datetime
 import os.path
 import pandas as pd
-# import numpy as np
+import numpy as np
 import pandas_datareader as pdr
 from yahoo_fin import stock_info as si
-from CorrelationTracker import StockCorrelations
-from CorrelationTracker import CryptoCorrelations
+# from CorrelationTracker import StockCorrelations
+# from CorrelationTracker import CryptoCorrelations
 import requests
 from bs4 import BeautifulSoup
 import seaborn as sns
+import warnings
 
 # Import mpl, assign bmh style
 import matplotlib
@@ -36,8 +37,34 @@ start = '2020-01-01'
 # Initalize symbols list for later use
 symbols = []
 
+# Get symbols, store in symbols
+def get_symbols():
+
+    # Get input
+    ticker = input('Ticker Symbols: ').upper().split(',')
+
+    # add ticker symbols to symbols list
+    if ticker not in symbols:
+        symbols.append(ticker)
+
+    
+
+    return symbols
+
 # Get top stock and crypto correlations for user to examine and pursue
-def get_corrs():
+def get_corrs(symbols):
+    # compare against the market?
+    global comp
+    comp = input('Compare against the market?: ')
+
+    # if yes, add S&p 500 to symbols list
+    if comp == 'y' or  comp == 'Y' or comp ==  'yes' or comp ==  'Yes':
+        symbols.append('^GSPC')
+
+    # for ticker in symbols, download full data and financials
+    for ticker_name in symbols:
+        tick = yf.download(ticker_name, start, today)
+        tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker_name) + '.csv')
 
     # Get top stock correlations?
     StockCorrs = input("Get top Stock Correlations?")
@@ -58,76 +85,58 @@ def get_corrs():
     else:
         pass
 
-def get_single_corr():
-    #pull price using iex for each symbol in list defined above
-    for ticker in symbols: 
-        r = pdr.DataReader(ticker, 'yahoo', start)
-        # add a symbol column
-        r['Symbol'] = ticker 
-        symbols.append(r)
+# Get single correlation
+def get_single_corr(symbols):
 
-    # concatenate into df
-    df = pd.concat(symbols)
-    df = df.reset_index()
-    df = df[['Date', 'Close', 'Symbol']]
-    df.head()
+    # load the CSV file containing all of the stock correlations
+    correlations = pd.read_csv("Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv")
 
-    df_pivot = df.pivot('date','symbol','close').reset_index()
-    df_pivot.head()
+    # give the columns meaningful names
+    correlations.columns = ['ticker1', 'ticker2', 'correlation']
 
-    corr_df = df_pivot.corr(method='pearson')
-    #reset symbol as index (rather than 0-X)
-    corr_df.head().reset_index()
-    del corr_df.index.name
-    corr_df.head(10)
+    # filter the data to include only the correlations for the target stock
+    correlations = correlations[(correlations['ticker1'] == symbols) | (correlations['ticker2'] == symbols)].reset_index(drop=True) 
+    
+    # sort the results in descending order and keep only the top 10
+    correlations = correlations.sort_values('correlation', ascending=False).head(10)
+    
+    print("\nTop Absolute Correlations: ")
+    print(correlations)
 
-    #take the bottom triangle since it repeats itself
-    mask = np.zeros_like(corr_df)
-    mask[np.triu_indices_from(mask)] = True
-    #generate plot
-    sns.heatmap(corr_df, cmap='RdYlGn', vmax=1.0, vmin=-1.0 , mask = mask, linewidths=2.5)
-    plt.yticks(rotation=0) 
-    plt.xticks(rotation=90) 
-    plt.show()
+    print("-----------------------------------------------")
 
-# Get symbols, store in symbols
-def get_symbols():
+    return correlations
 
-    # Get input
-    ticker = input('Ticker Symbol: ').upper()
+    # # Get correlation
+    # corr = input("Get correlation?")
 
-    # add ticker symbols to symbols list
-    if ticker not in symbols:
-        symbols.append(ticker)
+    # if corr == "Y" or corr == "y" or corr == "Yes" or corr == "yes":
+    #     ticker1 = input("compare Correlation to (seperated by ,): ").split(', ')
 
-    # compare against the market?
-    global comp
-    comp = input('Compare against the market?: ')
+    #     # Get correlation
+    #     symbols_data = yf.download(symbols[0], start, today)
+        
+    #     for ticker in ticker1:
+    #         ticker1_data = yf.download(ticker1, start, today)
 
-    # if yes, add S&p 500 to symbols list
-    if comp == 'y' or  comp == 'Y' or comp ==  'yes' or comp ==  'Yes':
-        symbols.append('^GSPC')
-
-    # for ticker in symbols, download full data and financials
-    for ticker_name in symbols:
-        tick = yf.download(ticker_name, start, today)
-        tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker) + '.csv')
-
-    return symbols
+    #         # Get correlation
+    #         corr = symbols_data['Adj Close'].corr(ticker1_data['Adj Close'])
+    #         print(ticker +" Correlation: ")
+    #         print(corr)
 
 # define function to get ticker info
-def get_Ticker_info():
+def get_Ticker_info(symbols):
 
     for symbol in symbols:
         if symbol != "^GSPC":
 
-            qtable = si.get_quote_table(symbol, dict_result=False)
+            qtable = si.get_quote_table(str(symbol).strip(), dict_result=False)
             
             print(qtable)
             print()
             print('-----------------------------------------------')
 
-            url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
+            url = ("https://www.marketwatch.com/investing/stock/"+str(symbol).strip().lower()+"?mod=quote_search")
 
             global soup, site
 
@@ -136,24 +145,32 @@ def get_Ticker_info():
                 
             site = 'Description'
 
-            get_Paragraphs(soup, site, symbol)
+            get_Paragraphs(soup, site, str(symbol).strip())
 
             single_ticker_Analysis(symbols)
                 
             report(symbols)
 
-
-
-
-
             get_MW_Articles(symbol)
 
             plots()
+        
+        else:
+            pass
 
 # Run the program in a loop
 t = 0
 while t < 5:
-    get_corrs()
+
     get_symbols()
-    get_Ticker_info()
+
+    if len(symbols) == 1:
+        get_single_corr(symbols)
+    elif len(symbols) > 1:
+        get_corrs(symbols)
+    else:
+        pass
+    
+    get_Ticker_info(symbols)
+
     t += 1

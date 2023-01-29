@@ -10,8 +10,7 @@ from requests.api import get
 import yfinance as yf
 from datetime import datetime
 import matplotlib.pyplot as plt
-import collections
-import pandas_datareader
+
 
 #### YF pandas override
 yf.pdr_override()
@@ -79,7 +78,7 @@ def single_ticker_Analysis(symbols):
     # var for ticker csv file
     for ticker_name in symbols:
         if ticker_name != "^GSPC":
-            TICKER = pd.read_csv('Stocks\DataVis\Files\StockData\FullData' + ticker_name + ".csv")
+            TICKER = pd.read_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker_name).strip() + ".csv")
             # print(TICKER['Volume'])
 
             #SMA 30 day stored in a pandas dataframe
