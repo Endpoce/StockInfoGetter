@@ -88,20 +88,27 @@ def get_corrs(symbols):
 # Get single correlation
 def get_single_corr(symbols):
 
-    # load the CSV file containing all of the stock correlations
-    correlations = pd.read_csv("Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv")
+    # Get correlation
+    corr = input("Get correlations?")
 
-    # give the columns meaningful names
-    correlations.columns = ['ticker1', 'ticker2', 'correlation']
+    # if yes, get correlation
+    if corr == "Y" or corr == "y" or corr == "Yes" or corr == "yes":
+        correlations = pd.read_csv("Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv", delimiter=',')
+        # print(correlations.loc[0:10,:])
 
-    # filter the data to include only the correlations for the target stock
-    correlations = correlations[(correlations['ticker1'] == symbols) | (correlations['ticker2'] == symbols)].reset_index(drop=True) 
-    
-    # sort the results in descending order and keep only the top 10
-    correlations = correlations.sort_values('correlation', ascending=False).head(10)
-    
-    print("\nTop Absolute Correlations: ")
-    print(correlations)
+        correlations.columns = ['ticker1', 'ticker2', 'correlation']
+
+        df = pd.DataFrame(correlations)
+
+        df = df.loc[df[] == symbols[0]]
+
+        # give columns meaningful names
+
+        correlations.sort_values(by=['correlation'], ascending=False, inplace=True)
+                
+    else:
+        pass
+
 
     print("-----------------------------------------------")
 
