@@ -8,7 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 # Import financial services
 import yfinance as yf
 from ArticleGetter.GetArticles import get_MW_Articles, get_Paragraphs
-from DataVis.ReportCreator import get_symbols, single_ticker_Analysis, report, plots
+from DataVis.ReportCreator import get_symbols, single_ticker_plot, report, plots
 
 # Import resources
 from datetime import datetime
@@ -34,6 +34,8 @@ plt.style.use('bmh')
 today = datetime.now()
 start = '2020-01-01'
 
+corrs = 'E:\Projects\Github\StockInfoGetter\Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv'
+
 # Initalize symbols list for later use
 symbols = []
 
@@ -41,7 +43,7 @@ symbols = []
 def get_symbols():
 
     # Get input
-    ticker = input('Ticker Symbols: ').upper().split(',')
+    ticker = input('Ticker Symbols: ').upper()
 
     # add ticker symbols to symbols list
     if ticker not in symbols:
@@ -85,44 +87,18 @@ def get_corrs(symbols):
     else:
         pass
 
-# Get single correlation
-def get_single_corr(symbols):
+# Get all correlations for a single ticker
+def get_single_corr(corrs, symbols):
 
-    # load the CSV file containing all of the stock correlations
-    correlations = pd.read_csv("Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv")
-
-    # give the columns meaningful names
-    correlations.columns = ['ticker1', 'ticker2', 'correlation']
-
-    # filter the data to include only the correlations for the target stock
-    correlations = correlations[(correlations['ticker1'] == symbols) | (correlations['ticker2'] == symbols)].reset_index(drop=True) 
-    
-    # sort the results in descending order and keep only the top 10
-    correlations = correlations.sort_values('correlation', ascending=False).head(10)
-    
-    print("\nTop Absolute Correlations: ")
-    print(correlations)
+    # Get correlation
+    with open(corrs, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            row = [str(element) for element in row]
+            if str(symbols[0]) in ','.join(row):
+                print(row)
 
     print("-----------------------------------------------")
-
-    return correlations
-
-    # # Get correlation
-    # corr = input("Get correlation?")
-
-    # if corr == "Y" or corr == "y" or corr == "Yes" or corr == "yes":
-    #     ticker1 = input("compare Correlation to (seperated by ,): ").split(', ')
-
-    #     # Get correlation
-    #     symbols_data = yf.download(symbols[0], start, today)
-        
-    #     for ticker in ticker1:
-    #         ticker1_data = yf.download(ticker1, start, today)
-
-    #         # Get correlation
-    #         corr = symbols_data['Adj Close'].corr(ticker1_data['Adj Close'])
-    #         print(ticker +" Correlation: ")
-    #         print(corr)
 
 # define function to get ticker info
 def get_Ticker_info(symbols):
@@ -130,10 +106,7 @@ def get_Ticker_info(symbols):
     for symbol in symbols:
         if symbol != "^GSPC":
 
-            qtable = si.get_quote_table(str(symbol).strip(), dict_result=False)
-            
-            print(qtable)
-            print()
+
             print('-----------------------------------------------')
 
             url = ("https://www.marketwatch.com/investing/stock/"+str(symbol).strip().lower()+"?mod=quote_search")
@@ -147,9 +120,14 @@ def get_Ticker_info(symbols):
 
             get_Paragraphs(soup, site, str(symbol).strip())
 
-            single_ticker_Analysis(symbols)
-                
             report(symbols)
+
+            qtable = si.get_quote_table(str(symbol).strip(), dict_result=False)
+            print(qtable)
+
+            get_single_corr(corrs, symbols)
+
+            single_ticker_plot(symbols)
 
             get_MW_Articles(symbol)
 
@@ -164,13 +142,18 @@ while t < 5:
 
     get_symbols()
 
+
     if len(symbols) == 1:
-        get_single_corr(symbols)
+        get_Ticker_info(symbols)
+
+
     elif len(symbols) > 1:
         get_corrs(symbols)
+        get_Ticker_info(symbols)
+
     else:
         pass
     
-    get_Ticker_info(symbols)
+
 
     t += 1

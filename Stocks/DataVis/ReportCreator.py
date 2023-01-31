@@ -72,7 +72,7 @@ def get_symbols():
     return ticker_name, comp, symbols
 
 #### if you have a single ticker, proceed here to single analysis
-def single_ticker_Analysis(symbols):
+def single_ticker_plot(symbols):
     
     i = 0
     # var for ticker csv file
