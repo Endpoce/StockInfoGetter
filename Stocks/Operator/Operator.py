@@ -91,12 +91,35 @@ def get_corrs(symbols):
 def get_single_corr(corrs, symbols):
 
     # Get correlation
+<<<<<<< HEAD
     with open(corrs, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             row = [str(element) for element in row]
             if str(symbols[0]) in ','.join(row):
                 print(row)
+=======
+    corr = input("Get correlations?")
+
+    # if yes, get correlation
+    if corr == "Y" or corr == "y" or corr == "Yes" or corr == "yes":
+        correlations = pd.read_csv("Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv", delimiter=',')
+        # print(correlations.loc[0:10,:])
+
+        correlations.columns = ['ticker1', 'ticker2', 'correlation']
+
+        df = pd.DataFrame(correlations)
+
+        df = df.loc[df[] == symbols[0]]
+
+        # give columns meaningful names
+
+        correlations.sort_values(by=['correlation'], ascending=False, inplace=True)
+                
+    else:
+        pass
+
+>>>>>>> a917c47062fcc2493f3eeb7a751f18f048ad6894
 
     print("-----------------------------------------------")
 
