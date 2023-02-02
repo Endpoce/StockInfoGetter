@@ -276,9 +276,9 @@ def report(symbols):
     for symbol in symbols:
         if symbol != "^GSPC":
             tick = yf.download(symbol, period='1y', interval='1d')
-            tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(symbol) + '.csv')
+            tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(symbol[0]) + '.csv')
 
-            csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\FullData'+symbol+'.csv')
+            csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\FullData'+symbol[0]+'.csv')
 
             # pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
             # volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')

@@ -9,20 +9,15 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import yfinance as yf
 from ArticleGetter.GetArticles import get_MW_Articles, get_Paragraphs
 from DataVis.ReportCreator import get_symbols, single_ticker_plot, report, plots
+from yahoo_fin import stock_info as si
 
 # Import resources
 from datetime import datetime
 import os.path
 import pandas as pd
-import numpy as np
-import pandas_datareader as pdr
-from yahoo_fin import stock_info as si
-# from CorrelationTracker import StockCorrelations
-# from CorrelationTracker import CryptoCorrelations
 import requests
 from bs4 import BeautifulSoup
-import seaborn as sns
-import warnings
+
 
 # Import mpl, assign bmh style
 import matplotlib
@@ -43,20 +38,17 @@ symbols = []
 def get_symbols():
 
     # Get input
-    ticker = input('Ticker Symbols: ').upper()
+    ticker = input('Ticker Symbols: ').upper().split(',')
 
     # add ticker symbols to symbols list
     if ticker not in symbols:
         symbols.append(ticker)
-
-    
 
     return symbols
 
 # Get top stock and crypto correlations for user to examine and pursue
 def get_corrs(symbols):
     # compare against the market?
-    global comp
     comp = input('Compare against the market?: ')
 
     # if yes, add S&p 500 to symbols list
@@ -90,13 +82,19 @@ def get_corrs(symbols):
 # Get all correlations for a single ticker
 def get_single_corr(corrs, symbols):
 
+    import CorrelationTracker.StockCorrelations as sc
+
+    # Initalize rows list
+    rows = []
+
     # Get correlation
     with open(corrs, 'r') as file:
         reader = csv.reader(file)
         for row in reader:
             row = [str(element) for element in row]
             if str(symbols[0]) in ','.join(row):
-                print(row)
+                rows.append(row)
+                print(rows.index(row), row)
 
     print("-----------------------------------------------")
 
@@ -109,32 +107,34 @@ def get_Ticker_info(symbols):
 
             print('-----------------------------------------------')
 
-            url = ("https://www.marketwatch.com/investing/stock/"+str(symbol).strip().lower()+"?mod=quote_search")
-
-            global soup, site
-
-            reqs = requests.get(url)
-            soup = BeautifulSoup(reqs.text, 'lxml')
-                
+            url = f"https://www.marketwatch.com/investing/stock/{symbol.lower()}"
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
             site = 'Description'
+            articles = []
+            for article in soup.find_all("a", class_="link"):
+                articles.append(article.text)
+            
 
-            get_Paragraphs(soup, site, str(symbol).strip())
 
-            report(symbols)
+            return articles[:10], soup, site
+                
 
-            qtable = si.get_quote_table(str(symbol).strip(), dict_result=False)
-            print(qtable)
 
-            get_single_corr(corrs, symbols)
 
-            single_ticker_plot(symbols)
-
-            get_MW_Articles(symbol)
-
-            plots()
         
         else:
             pass
+
+# define function to get ticker descriptions
+def get_descriptions(symbols):
+    for symbol in symbols:
+        url = f"https://www.marketwatch.com/investing/stock/{symbol[0].lower().strip()}"
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        site = 'Description'
+
+        get_Paragraphs(soup, site, str(symbol).strip())
 
 # Run the program in a loop
 t = 0
@@ -144,12 +144,34 @@ while t < 5:
 
 
     if len(symbols) == 1:
-        get_Ticker_info(symbols)
+        get_descriptions(symbols)
 
+        report(symbols)
 
+        for symbol in symbols:
+            qtable = si.get_quote_table(str(symbol[0]).strip(), dict_result=False)
+            print(qtable)
+        print('-----------------------------------------------')
+
+        get_single_corr(corrs, symbols)
+
+        single_ticker_plot(symbols)
+
+        get_MW_Articles(symbols[0])
+
+        plots()
+
+    # if more than one symbol, get ticker info for all symbols
     elif len(symbols) > 1:
+        get_descriptions(symbols)
+
         get_corrs(symbols)
-        get_Ticker_info(symbols)
+        
+        report(symbols)
+
+        plots()
+
+
 
     else:
         pass

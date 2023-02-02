@@ -1,11 +1,6 @@
-import numpy as np
-import pandas as pd
-import pandas_datareader as pdr
 import requests
 from bs4 import BeautifulSoup
-import matplotlib.pyplot as plt
-import json
-import time
+
 
 symbols = []
 
@@ -65,30 +60,13 @@ def get_Google_articles(symbols):
 def get_MW_Articles(symbol):
     if symbol != "^GSPC":
 
-        with open("Stocks\ArticleGetter\Files\\" +symbol+"MWLinks.txt", 'w') as f:
-            f.truncate(0)
-
-            url = ("https://www.marketwatch.com/investing/stock/"+symbol.lower()+"?mod=quote_search")
-
-            global soup, site
-
-            reqs = requests.get(url)
-            soup = BeautifulSoup(reqs.text, 'lxml')
-            
-            site = "MarketWatch"
-
-            links = []
-            for link in soup.findAll('a'):
-                links.append(link.get('href'))
-
-            f.writelines("MarketWatch Links:\n\n")
-
-            for link in links:
-                if "https:" in str(link):
-                    f.write(link)
-                else:
-                    pass
-        f.close()
+        url = f"https://www.marketwatch.com/investing/stock/{symbol}"
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        articles = []
+        for article in soup.find_all("a", class_="link"):
+            articles.append(article.text)
+        return articles[:10]
 
 def get_Paragraphs(soup, site, symbol):
 
@@ -96,14 +74,16 @@ def get_Paragraphs(soup, site, symbol):
         f.truncate()
         for data in soup.findAll('p'):
             try:
-                if "company" in str(data):
-                    f.writelines("\n" + "Description:" + ":\n\n")
-                    f.write(str(data.getText()))
+                if str(data):
+                    if "company" in str(data):
+                        f.writelines("\n" + "Description:" + ":\n")
 
-                    print(str(site) + ":\n\n")
-                    print(data.getText())
-                    print()
-                    print('-----------------------------------------------')
+                        f.write(str(data.getText()))
+
+                        print(str(site) + ":\n\n")
+                        print(data.getText())
+                        print()
+                        print('-----------------------------------------------')
                 else:
                     pass
             except Exception as e:
