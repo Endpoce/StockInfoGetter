@@ -10,6 +10,7 @@ from requests.api import get
 import yfinance as yf
 from datetime import datetime
 import matplotlib.pyplot as plt
+import requests
 
 
 #### YF pandas override
@@ -321,16 +322,46 @@ def report(symbols):
             sortpri = dict(sorted_prices)
 
     # report highest price and highest volume
-    if len(symbols) > 1:
+    # if len(symbols) > 1:
         
-        max_price = max(sortpri, key=sortpri.get)
-        max_vol = max(sortvol,key=sortvol.get)
+    #     max_price = max(sortpri, key=sortpri.get)
+    #     max_vol = max(sortvol,key=sortvol.get)
 
-        print('------------------------------------------')
-        print('\nHighest price action:\n\t\t\t' + str(max_price))
-        print('\nMost Volume:\n\t\t\t' + str(max_vol))    
-    print('------------------------------------------')
+    #     print('------------------------------------------')
+    #     print('\nHighest price action:\n\t\t\t' + str(max_price))
+    #     print('\nMost Volume:\n\t\t\t' + str(max_vol))    
+    # print('------------------------------------------')
     
+def report2(symbols):
+    API_KEY = 'S1RT6O9PMYILCVZ4'
+    high_price_ticker = ""
+    high_price = 0
+    high_volume_ticker = ""
+    high_volume = 0
+    for ticker in symbols:
+        url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={ticker}&apikey={API_KEY}"
+        response = requests.get(url)
+        data = response.json()
+        try:
+            price = float(data["Global Quote"]["05. price"])
+            volume = float(data["Global Quote"]["06. volume"])
+            if price > high_price:
+                high_price = price
+                high_price_ticker = ticker
+            if volume > high_volume:
+                high_volume = volume
+                high_volume_ticker = ticker
+        except KeyError:
+            print(f"Error retrieving data for {ticker}")
+        
+        return high_price_ticker, high_price, high_volume_ticker, high_volume
+
+
+# high_price_ticker, high_price, high_volume_ticker, high_volume = report2(symbols)
+# print(f"Ticker with highest price: {high_price_ticker} ({high_price})")
+# print(f"Ticker with highest volume: {high_volume_ticker} ({high_volume})")
+
+
 #### Show and save Plots
 def plots():
     # plt.savefig('Stocks\DataVis\Files\Graphs\\'+str(symbol) + 'Graphs.png')
