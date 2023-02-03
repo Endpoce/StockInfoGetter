@@ -24,85 +24,79 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 plt.style.use('bmh')
 
-# Get symbols, store in symbols
+import streamlit as st
+
+API_KEY = 'S1RT6O9PMYILCVZ4'
+
+# initialize streamlit page
+st.set_page_config(layout="wide")
+
+st.sidebar.title("Stock Info Getter")
+st.sidebar.subheader("Get stock info, news, and more!")
+
+st.title("Stock Info Getter")
+
+col1, col2 = st.columns(2, gap='small')
+
+
+
+
+# Get symbols, store in symbols, in the sidebar
 def get_symbols():
 
-    # define a loop to get symbols
-    while True:
+    # Get symbols from user
+    ticker = st.sidebar.text_input('Ticker Symbols: ').upper()
+    if ticker not in symbols:
+        symbols.append(ticker)
 
-        # Get input
-        ticker = input('Ticker Symbols: ').upper()
-        if ticker == 'DONE':
-            break
-        else:
-            pass
-
-        # add ticker symbols to symbols list
-        if ticker not in symbols:
-            symbols.append(ticker)
-
-    return symbols
-
-# Get top stock and crypto correlations for user to examine and pursue
+# Get top stock and crypto correlations for user to examine and pursue, in the sidebar
 def get_corrs(symbols):
-    # compare against the market?
-    comp = input('Compare against the market?: ')
-
-    # if yes, add S&p 500 to symbols list
-    if comp == 'y' or  comp == 'Y' or comp ==  'yes' or comp ==  'Yes':
-        symbols.append('^GSPC')
 
     # for ticker in symbols, download full data and financials
     for ticker_name in symbols:
         tick = yf.download(ticker_name, start, today)
         tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker_name) + '.csv')
 
-    # Get top stock correlations?
-    StockCorrs = input("Get top Stock Correlations?")
+    st.sidebar.write("\nTop Absolute Correlations")
+    df = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv')
+    st.sidebar.write(df.loc[0:10,:])
 
-    if StockCorrs == "Y" or StockCorrs == "y" or StockCorrs == "Yes" or StockCorrs == "yes":
+    st.sidebar.write("\nTop Absolute Correlations")
+    df = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\CorrelationTracker\StockFIles\CryptoCorrelations.csv')
+    st.sidebar.write(df.loc[0:10,:])
 
-        print("\nTop Absolute Correlations")
-        df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv')
-        print(df.loc[0:10,:])
-
-    # Get top crypto correlations
-    CryptoCorrs = input("Get top Crypto Correlations?")
-
-    if CryptoCorrs == "Y" or CryptoCorrs == "y" or CryptoCorrs == "Yes" or CryptoCorrs == "yes":
-            print("\nTop Absolute Correlations")
-            df = pd.read_csv('Stocks\CorrelationTracker\StockFiles\CryptoCorrelations.csv')
-            print(df.loc[0:10,:])
-    else:
-        pass
-
-# Get all correlations for a single ticker
-def get_single_corr(corrs, symbols):
+# Get all correlations for a single ticker, on the main page, column 1
+def get_single_corr(symbols):
 
     import CorrelationTracker.StockCorrelations as sc
 
-    # Initalize rows list
-    rows = []
+    corrs = 'E:\Projects\Github\StockInfoGetter\Stocks\StockCorrelations.csv'
 
-    # Get correlation
-    with open(corrs, 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            row = [str(element) for element in row]
-            if str(symbols[0]) in ','.join(row):
-                rows.append(row)
-                print(rows.index(row), row)
+    for symbol in symbols:
+        file_path = corrs
+        data = pd.read_csv(file_path)
+        # give the columns a name
+        data.columns = ['Ticker1','Ticker2','Correlation']
+        filtered_data = data[data['Ticker1'].str.contains(symbol)]
+        filtered_data2 = data[data['Ticker2'].str.contains(symbol)]
 
-    print("-----------------------------------------------")
+        filtered_data = filtered_data.append(filtered_data2)
+        filtered_data = filtered_data.sort_values(by=['Correlation'], ascending=False)[0:10]
 
-# define function to get ticker info
+
+    with col2:
+        st.write("Top correlations:")
+        st.table(filtered_data)
+        st.write("-----------------------------------------------")
+
+# define function to get ticker info, on the main page, column 2
 def get_Ticker_info(symbols):
 
     for symbol in symbols:
         if symbol != "^GSPC":
 
 
-            print('-----------------------------------------------')
+            st.write('-----------------------------------------------')
 
             url = f"https://www.marketwatch.com/investing/stock/{symbol.lower()}"
             response = requests.get(url)
@@ -123,92 +117,133 @@ def get_Ticker_info(symbols):
         else:
             pass
 
-# define function to get ticker descriptions
+# define function to get ticker descriptions, at the top of the main page
 def get_descriptions(symbols):
 
-        for symbol in symbols:
-            API_KEY = 'S1RT6O9PMYILCVZ4'
-            url = f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={symbol}&apikey={API_KEY}"
-            response = requests.get(url)
-            data = response.json()
-            description = data["Description"]
-            print(description)
-            print('-----------------------------------------------')
-
-# define a function to get highest volume and price action stocks
-def get_highest_volume(symbols):
-    high_price_ticker, high_price, high_volume_ticker, high_volume = report2(symbols)
-    print(f"Ticker with highest price: {high_price_ticker} ({high_price})")
-    print(f"Ticker with highest volume: {high_volume_ticker} ({high_volume})")
-
-# Run the program in a loop
-t = 0
-while t < 5:
-
-    # Set historical window and symbols list
-    today = datetime.now()
-    start = '2020-01-01'
-
-    corrs = 'E:\Projects\Github\StockInfoGetter\Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv'
-
-    # Initalize symbols list for later use
-    symbols = []
-
-    # Run the program
-    if __name__ == '__main__':
-        
-        # get correlations on startup
-        get_corrs(symbols)
-
-        # get symbols
-        get_symbols()
-
-        # if only one symbol, get ticker info for that symbol
-        if len(symbols) == 1:
-
-            # get company description
-            get_descriptions(symbols)
-
-            # get quick report
-            report(symbols)
-
-            # get qtable
+        try:
             for symbol in symbols:
-                qtable = si.get_quote_table(str(symbol[0]).strip(), dict_result=False)
-                print(qtable)
-            print('-----------------------------------------------')
-
-            # get correlations for this ticker
-            get_single_corr(corrs, symbols)
-
-            # get ticker info
-            single_ticker_plot(symbols)
-
-            # get marketwatch articles
-            get_MW_Articles(symbols[0])
-
-            # display plots
-            plots()
-
-        # if more than one symbol, get ticker info for all symbols
-        elif len(symbols) > 1:
-            get_descriptions(symbols)
-
-            report(symbols)
-
-            get_highest_volume(symbols)
-            
-            for symbol in symbols:
-                qtable = si.get_quote_table(str(symbol).strip(), dict_result=False)
-                print(qtable)
-
-            plots()
-
-
-
-        else:
+                API_KEY = 'S1RT6O9PMYILCVZ4'
+                url = f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={symbol}&apikey={API_KEY}"
+                response = requests.get(url)
+                data = response.json()
+                description = data["Description"]
+                st.write(description)
+                st.write('-----------------------------------------------')
+        except:
             pass
+
+# define a function to get highest volume and price action stocks, on the main page, column 2
+def get_highest_volume(symbols):
+    with col2:
+        high_price_ticker, high_price, high_volume_ticker, high_volume = report2(symbols)
+        st.write(f"Ticker with highest price: {high_price_ticker} ({high_price})")
+        st.write(f"Ticker with highest volume: {high_volume_ticker} ({high_volume})")
+
+#### Iterate over csv files and report last and average price and volume for all symbols
+def report(symbols):
+
+    try:
+        # for each symbol in symbols, download the data and save it to a csv file
+        for symbol in symbols:
+            if symbol != "^GSPC":
+                tick = yf.download(symbol, period='1y', interval='1d')
+                tick.to_csv('E:\Projects\Github\StockInfoGetter\Stocks\DataVis\Files\StockData\\' + str(symbol[0]) + '.csv')
+
+                csvfile = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\DataVis\Files\StockData\\FullData'+symbol+'.csv')
+
+                last_pri = str(csvfile['Close'].iloc[-1])
+                last_vol = str(csvfile['Volume'].iloc[-1])
+
+                avg_pri = str(csvfile['Close'].mean())
+                avg_vol = str(csvfile['Volume'].mean())
+
+                with col1:
+                    # Symbol
+                    st.write()
+                    # st.write('---')
+                    st.write(str(symbol) + ':')
+
+                    # Price action
+                    st.write('\nLast Price:\n\t\t\t' + last_pri)
+                    st.write('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
+
+                    # Volume
+                    st.write('\nLast Volume:\n\t\t\t' + last_vol)
+                    st.write('\nAverage (30d) volume:\n\t\t\t' + avg_vol)
+                
+    except:
+        pass
         
+# define a function to get the qtable, on the main page, column 2
+def get_qtable(symbols):
+    # get qtable
+    try:
+        for symbol in symbols:
+            qtable = si.get_quote_table(str(symbol[0]).strip(), dict_result=True)
+            st.write(qtable)
+        st.write('---')
+    except:
+        pass
 
 
-        t += 1
+# Set historical window and symbols list
+today = datetime.now()
+start = '2020-01-01'
+
+
+# Initalize symbols list for later use
+symbols = []
+
+# Run the program
+if __name__ == '__main__':
+    
+    # get correlations on startup
+    get_corrs(symbols)
+
+    # get symbols
+    get_symbols()
+
+    # if only one symbol, get ticker info for that symbol
+    if len(symbols) == 1:
+
+        # get company description
+        get_descriptions(symbols)
+
+
+        # get quick report
+        report(symbols)
+        print('---')
+
+        get_qtable(symbols)
+
+        # get correlations for this ticker
+        get_single_corr(symbols)
+
+        # get ticker info
+        single_ticker_plot(symbols)
+
+        # get marketwatch articles
+        get_MW_Articles(symbols[0])
+
+        # display plots
+        plots()
+
+    # if more than one symbol, get ticker info for all symbols
+    elif len(symbols) > 1:
+        get_descriptions(symbols)
+
+        report(symbols)
+
+        get_highest_volume(symbols)
+
+        for symbol in symbols:
+            qtable = si.get_quote_table(str(symbol).strip(), dict_result=False)
+            st.write(qtable)
+
+        plots()
+
+
+
+    else:
+        pass
+    
