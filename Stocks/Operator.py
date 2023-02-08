@@ -31,15 +31,12 @@ API_KEY = 'S1RT6O9PMYILCVZ4'
 # initialize streamlit page
 st.set_page_config(layout="wide")
 
+st.title("Stock Info Getter")
+
 st.sidebar.title("Stock Info Getter")
 st.sidebar.subheader("Get stock info, news, and more!")
 
-st.title("Stock Info Getter")
-
 col1, col2 = st.columns(2, gap='small')
-
-
-
 
 # Get symbols, store in symbols, in the sidebar
 def get_symbols():
@@ -52,17 +49,23 @@ def get_symbols():
 # Get top stock and crypto correlations for user to examine and pursue, in the sidebar
 def get_corrs(symbols):
 
+    cwd = os.getcwd()
+
     # for ticker in symbols, download full data and financials
     for ticker_name in symbols:
-        tick = yf.download(ticker_name, start, today)
-        tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker_name) + '.csv')
+        import CorrelationTracker.StockCorrelations as sc
+
+        filepath = os.path.join(cwd,'StockCorrelations.csv')
+
+        
+        # tick.to_csv(filepath)
 
     st.sidebar.write("\nTop Absolute Correlations")
-    df = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\CorrelationTracker\StockFIles\StockCorrelations.csv')
+    df = pd.read_csv(filepath)
     st.sidebar.write(df.loc[0:10,:])
 
     st.sidebar.write("\nTop Absolute Correlations")
-    df = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\CorrelationTracker\StockFIles\CryptoCorrelations.csv')
+    df = pd.read_csv(filepath)
     st.sidebar.write(df.loc[0:10,:])
 
 # Get all correlations for a single ticker, on the main page, column 1
@@ -84,10 +87,9 @@ def get_single_corr(symbols):
         filtered_data = filtered_data.sort_values(by=['Correlation'], ascending=False)[0:10]
 
 
-    with col2:
-        st.write("Top correlations:")
-        st.table(filtered_data)
-        st.write("-----------------------------------------------")
+    st.write("Top correlations:")
+    st.table(filtered_data)
+    st.write("---")
 
 # define function to get ticker info, on the main page, column 2
 def get_Ticker_info(symbols):
@@ -146,10 +148,15 @@ def report(symbols):
         # for each symbol in symbols, download the data and save it to a csv file
         for symbol in symbols:
             if symbol != "^GSPC":
-                tick = yf.download(symbol, period='1y', interval='1d')
-                tick.to_csv('E:\Projects\Github\StockInfoGetter\Stocks\DataVis\Files\StockData\\' + str(symbol[0]) + '.csv')
+                
+                cwd = os.getcwd()
 
-                csvfile = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\DataVis\Files\StockData\\FullData'+symbol+'.csv')
+                tick = yf.download(symbol, period='1y', interval='1d')
+
+                filepath = os.path.join(cwd, 'FUllData' + str(symbol) + '.csv')
+                tick.to_csv(filepath)
+
+                csvfile = pd.read_csv(filepath)
 
                 last_pri = str(csvfile['Close'].iloc[-1])
                 last_vol = str(csvfile['Volume'].iloc[-1])
@@ -157,20 +164,19 @@ def report(symbols):
                 avg_pri = str(csvfile['Close'].mean())
                 avg_vol = str(csvfile['Volume'].mean())
 
-                with col1:
-                    # Symbol
-                    st.write()
-                    # st.write('---')
-                    st.write(str(symbol) + ':')
+                # Symbol
+                st.write()
+                # st.write('---')
+                st.write(str(symbol) + ':')
 
-                    # Price action
-                    st.write('\nLast Price:\n\t\t\t' + last_pri)
-                    st.write('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
+                # Price action
+                st.write('\nLast Price:\n\t\t\t' + last_pri)
+                st.write('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
 
-                    # Volume
-                    st.write('\nLast Volume:\n\t\t\t' + last_vol)
-                    st.write('\nAverage (30d) volume:\n\t\t\t' + avg_vol)
-                
+                # Volume
+                st.write('\nLast Volume:\n\t\t\t' + last_vol)
+                st.write('\nAverage (30d) volume:\n\t\t\t' + avg_vol)
+            
     except:
         pass
         
@@ -179,54 +185,61 @@ def get_qtable(symbols):
     # get qtable
     try:
         for symbol in symbols:
-            qtable = si.get_quote_table(str(symbol[0]).strip(), dict_result=True)
+            qtable = si.get_quote_table(str(symbol[0]).strip(), dict_result=False)
             st.write(qtable)
         st.write('---')
     except:
         pass
 
 
-# Set historical window and symbols list
-today = datetime.now()
-start = '2020-01-01'
-
-
-# Initalize symbols list for later use
-symbols = []
-
 # Run the program
 if __name__ == '__main__':
+
     
-    # get correlations on startup
-    get_corrs(symbols)
+    # Set historical window and symbols list
+    today = datetime.now()
+    start = '2020-01-01'
+
+
+
+    
+    # Initalize symbols list for later use
+    symbols = []
 
     # get symbols
     get_symbols()
+
+    st.title(symbols)
+
+    st.subheader(get_descriptions(symbols))
+
+    # get correlations on startup
+    get_corrs(symbols)
 
     # if only one symbol, get ticker info for that symbol
     if len(symbols) == 1:
 
         # get company description
-        get_descriptions(symbols)
 
 
-        # get quick report
-        report(symbols)
-        print('---')
+        with col1:
+            # get quick report
+            report(symbols)
+            st.write('---')
 
-        get_qtable(symbols)
+            get_qtable(symbols)
+        with col2:
+            # get correlations for this ticker
+            get_single_corr(symbols)
 
-        # get correlations for this ticker
-        get_single_corr(symbols)
-
-        # get ticker info
+        # display ticker plot
         single_ticker_plot(symbols)
 
         # get marketwatch articles
         get_MW_Articles(symbols[0])
 
         # display plots
-        plots()
+        # plots()
 
     # if more than one symbol, get ticker info for all symbols
     elif len(symbols) > 1:
@@ -246,4 +259,6 @@ if __name__ == '__main__':
 
     else:
         pass
+
+    st.run()
     

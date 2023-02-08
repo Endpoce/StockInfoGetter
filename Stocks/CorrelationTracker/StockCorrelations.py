@@ -6,7 +6,7 @@ import datetime as dt
 from yahoo_fin import stock_info as si
 import pandas as pd
 from csv import *
-import time
+import os
 
 pd.set_option('display.max_rows', None)
 warnings.filterwarnings("ignore")
@@ -39,7 +39,10 @@ def get_top_abs_correlations(df):
     au_corr = df.corr().abs().unstack()
     labels_to_drop = get_redundant_pairs(df)
     au_corr = au_corr.drop(labels=labels_to_drop).sort_values(ascending=False)
-    FindCorrelations = au_corr.to_csv('Stocks\CorrelationTracker\StockFiles\StockCorrelations.csv')
+
+    cwd = os.getcwd()
+    filepath = os.path.join(cwd,'StockCorrelations.csv')
+    FindCorrelations = au_corr.to_csv(filepath, index = True, header = True)
 
     return au_corr
 

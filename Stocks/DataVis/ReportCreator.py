@@ -11,6 +11,7 @@ import yfinance as yf
 from datetime import datetime
 import matplotlib.pyplot as plt
 import requests
+import streamlit as st
 
 
 #### YF pandas override
@@ -35,8 +36,8 @@ def top_correlations():
 
         from DataVis.FindCorrelations import dataset, stocks_returns, get_redundant_pairs, get_top_abs_correlations
         df = pd.read_csv('Stocks\DataVis\Files\Correlations\FoundCorrs.csv')
-        print(df.loc[0:10,:])
-        print()
+        st.write(df.loc[0:10,:])
+        st.write()
 
     else:
 
@@ -79,8 +80,8 @@ def single_ticker_plot(symbols):
     # var for ticker csv file
     for ticker_name in symbols:
         if ticker_name != "^GSPC":
-            TICKER = pd.read_csv('Stocks\DataVis\Files\StockData\FullData' + str(ticker_name).strip() + ".csv")
-            # print(TICKER['Volume'])
+            TICKER = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\DataVis\Files\StockData\FullData' + str(ticker_name).strip() + ".csv")
+            # st.write(TICKER['Volume'])
 
             #SMA 30 day stored in a pandas dataframe
             smaThirty = pd.DataFrame()
@@ -140,7 +141,7 @@ def single_ticker_plot(symbols):
             data['Sell_Signal_Price'] = buy_sell[1]
 
             #visualize the data and the strategy to buy and sell the stock
-            plt.figure()
+            fig = plt.figure(figsize=(12.2,4.5))
             plt.style.use('fivethirtyeight')
             plt.plot(TICKER['Close'], label = ticker_name, alpha=0.35)
             plt.plot(smaThirty['Close'], label='SMA30',alpha=0.35)
@@ -151,6 +152,8 @@ def single_ticker_plot(symbols):
             plt.title(ticker_name + ' Adj. Close Price History')
             plt.xlabel('SMA 30 vs. 100 day')
             plt.ylabel('Close Price')
+
+            st.pyplot(fig)
 
 #### Report (Display information)
 ## Correlation Matrices
@@ -277,9 +280,9 @@ def report(symbols):
     for symbol in symbols:
         if symbol != "^GSPC":
             tick = yf.download(symbol, period='1y', interval='1d')
-            tick.to_csv('Stocks\DataVis\Files\StockData\FullData' + str(symbol[0]) + '.csv')
+            tick.to_csv('E:\Projects\Github\StockInfoGetter\Stocks\DataVis\Files\StockData\FullData' + str(symbol[0]) + '.csv')
 
-            csvfile = pd.read_csv('Stocks\DataVis\Files\StockData\FullData'+symbol[0]+'.csv')
+            csvfile = pd.read_csv('E:\Projects\Github\StockInfoGetter\Stocks\DataVis\Files\StockData\FullData'+symbol[0]+'.csv')
 
             # pricefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'PriceCorrelations.csv')
             # volumefile = pd.read_csv( 'Stocks\DataVis\Files\Correlations\\' + symbol +'VolumeCorrelations.csv')
@@ -295,23 +298,23 @@ def report(symbols):
             # avg_vol_corr = volumefile['^GSPC'].mean()
 
             # Symbol
-            print()
-            print('-----------------------------------------------')
-            print(str(symbol) + ':')
+            st.write()
+            st.write('-----------------------------------------------')
+            st.write(str(symbol) + ':')
 
             # Price action
-            print('\nLast Price:\n\t\t\t' + last_pri)
-            print('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
+            st.write('\nLast Price:\n\t\t\t' + last_pri)
+            st.write('\nAverage (30d) Price:\n\t\t\t' + avg_pri)
             # if "^GSPC" in symbols:
-            #     print('\nPrice correlation to market:\n\t\t\t' + str(avg_pri_corr))
+            #     st.write('\nPrice correlation to market:\n\t\t\t' + str(avg_pri_corr))
             # else:
             #     pass
 
             # Volume
-            print('\nLast Volume:\n\t\t\t' + last_vol)
-            print('\nAverage (30d) volume:\n\t\t\t' + avg_vol)
+            st.write('\nLast Volume:\n\t\t\t' + last_vol)
+            st.write('\nAverage (30d) volume:\n\t\t\t' + avg_vol)
             # if "^GSPC" in symbols:
-            #     print('\nAverage Volume correlation:\n\t\t\t' + str(avg_vol_corr))
+            #     st.write('\nAverage Volume correlation:\n\t\t\t' + str(avg_vol_corr))
             # else:
             #     pass
             
@@ -321,17 +324,7 @@ def report(symbols):
             sorted_prices = sorted(price_actions.items(), key=lambda x:x[1])
             sortpri = dict(sorted_prices)
 
-    # report highest price and highest volume
-    # if len(symbols) > 1:
-        
-    #     max_price = max(sortpri, key=sortpri.get)
-    #     max_vol = max(sortvol,key=sortvol.get)
-
-    #     print('------------------------------------------')
-    #     print('\nHighest price action:\n\t\t\t' + str(max_price))
-    #     print('\nMost Volume:\n\t\t\t' + str(max_vol))    
-    # print('------------------------------------------')
-    
+#### Iterate over csv files and report last and average price and volume for all symbols
 def report2(symbols):
     API_KEY = 'S1RT6O9PMYILCVZ4'
     high_price_ticker = ""
@@ -352,24 +345,14 @@ def report2(symbols):
                 high_volume = volume
                 high_volume_ticker = ticker
         except KeyError:
-            print(f"Error retrieving data for {ticker}")
+            st.write(f"Error retrieving data for {ticker}")
         
         return high_price_ticker, high_price, high_volume_ticker, high_volume
-
-
-# high_price_ticker, high_price, high_volume_ticker, high_volume = report2(symbols)
-# print(f"Ticker with highest price: {high_price_ticker} ({high_price})")
-# print(f"Ticker with highest volume: {high_volume_ticker} ({high_volume})")
-
 
 #### Show and save Plots
 def plots():
     # plt.savefig('Stocks\DataVis\Files\Graphs\\'+str(symbol) + 'Graphs.png')
-    plt.show()
-
-# get_symbols()
-# compare_Against_Market(comp)
-# single_ticker_Analysis(symbols)
-# report()
+    
+    st.pyplot()
 
 
